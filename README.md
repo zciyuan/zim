@@ -27,7 +27,7 @@ ZIM 是面向私有化部署的 IM 服务端基线：**单租户、单 App**，�
 - **完整社交模型**：好友申请/黑名单/备注/星标，群与家庭组、成员权限、禁言、解散/退出。
 - **实时能力**：在线推送、presence/typing、RTC 信令 + LiveKit SFU、群/家庭语音房间。
 - **可运维**：Prometheus metrics、`/healthz` + `/readyz`、固定日志字段、Redis 锁选主清理、降级开关。
-- **管理端就绪**：`/admin` REST 覆盖用户、群、家庭组、消息、审计、敏感词、配置、推送证书、举报与统计；管理 UI 在独立仓。
+- **管理端就绪**：`/admin` REST 覆盖用户、群、家庭组、消息、审计、敏感词、配置、推送证书、举报与统计；管理 UI 在独立仓 [zim-admin](https://github.com/zciyuan/zim-admin)。
 
 ## 功能
 
@@ -207,7 +207,7 @@ opcode 分段：
 | 1400 | 会话 | 1900 | 推送 |
 | 9000 | 基础设施/流控 | | |
 
-REST 前缀：`/v1` 客户端、`/api` 服务端集成、`/admin` 管理端（仅 `zim-admin` 调用）。错误码为 6 位分段（`100xxx` 认证 … `900xxx` 基础设施）。
+REST 前缀：`/v1` 客户端、`/api` 服务端集成、`/admin` 管理端（仅 [zim-admin](https://github.com/zciyuan/zim-admin) 调用）。错误码为 6 位分段（`100xxx` 认证 … `900xxx` 基础设施）。
 
 ## 目录
 
@@ -224,6 +224,16 @@ internal/
   dao/ model/ utils/ version/
 deploy/                               # Dockerfile / compose / Helm / SQL / LiveKit
 ```
+
+## 相关仓库
+
+| 仓库 | 说明 |
+|---|---|
+| [zim](https://github.com/zciyuan/zim) | 服务端（本仓库）：11 个服务 + `zimfw` 框架层 |
+| [zim-admin](https://github.com/zciyuan/zim-admin) | 管理后台：基于 [GoWind Admin](https://gitee.com/tx7do/go-wind-admin) 的 `/admin` 管理端，独立构建与发布 |
+| [zim-web-client](https://github.com/zciyuan/zim-web-client) | 产品前端：React + TypeScript，一套代码覆盖 Web / PC / App（ADR-0029） |
+
+三个仓独立依赖、独立构建、独立发布。服务端不承载任何前端代码：管理端只调 `/admin`，客户端只走 `/v1` + WebSocket。本地并列目录惯例：`ZIM/`（远端 `zim`）、`zim-admin/`、`zim-web/`（远端 `zim-web-client`）。
 
 ## 部署
 

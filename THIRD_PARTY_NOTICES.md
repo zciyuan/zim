@@ -67,11 +67,11 @@ The following components are deployed as separate containers or processes. They 
 | Nacos 2.5 | Apache-2.0 | service registry / config |
 | SeaweedFS 3.80 | Apache-2.0 | default S3-compatible object store in the dev compose file |
 | MinIO server (optional) | AGPL-3.0 | `minio-go` client is Apache-2.0; the MinIO server is AGPL-3.0 |
-| GoWind Admin / Vben (separate admin repository) | MIT | not bundled in this repository |
+| GoWind Admin / Vben (separate admin repository, [zim-admin](https://github.com/zciyuan/zim-admin)) | MIT | not bundled in this repository |
 
 ## Notes
 
-- This repository does not include the `zim-web` client or the `zim-admin` management project; those are maintained separately and carry their own notices.
+- This repository does not include the [zim-web-client](https://github.com/zciyuan/zim-web-client) client (local directory `zim-web`) or the [zim-admin](https://github.com/zciyuan/zim-admin) management project; those are maintained separately and carry their own notices.
 - If you redistribute ZIM binaries or container images, keep this file together with the upstream `LICENSE` / `NOTICE` files for the components you ship.
 - MongoDB (SSPL-1.0), Redis 7.4 (RSALv2 / SSPL-1.0) and MinIO server (AGPL-3.0) have non-permissive terms; they are external services here, not linked code. Evaluate their terms before redistributing a bundled deployment.
 - This summary is provided for convenience, not as legal advice. When in doubt, consult the upstream license text.
