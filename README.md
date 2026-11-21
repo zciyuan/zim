@@ -272,7 +272,7 @@ go run ./tools/msgload -messages 100
 
 ## 许可证
 
-Apache-2.0。`LICENSE` 与 `THIRD_PARTY_NOTICES.md` 随首个公开版本补齐；第三方依赖主要包括 due（MIT）、LiveKit（Apache-2.0）、GoWind Admin/Vben（MIT）等。
+Apache-2.0，见 [LICENSE](LICENSE)。第三方依赖、外部服务及各自许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 致谢
 
