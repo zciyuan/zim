@@ -1,0 +1,31 @@
+﻿# ZIM zim-mesh-user bootstrap configuration.
+# Run: ./build/bin/zim-mesh-user -etc ./configs/zim-mesh-user
+
+pid = "./run/zim-mesh-user.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8201"
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[cluster.mesh]
+    name = "user"
+    addr = ":0"
+    codec = "proto"
+
+[registry.nacos]
+    urls = ["http://nacos:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]

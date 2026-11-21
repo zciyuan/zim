@@ -1,0 +1,73 @@
+# ZIM push bootstrap configuration.
+# Run: ./build/bin/zim-push -etc ./configs/zim-push
+
+pid = "./run/zim-push.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8204"
+    pprof = true
+
+[zim.push]
+    latencyWarnMs = 200
+
+[zim.push.offline]
+    provider = "dummy"
+    ratePerMinute = 5
+    # Optional platform routing.
+    iosProvider = ""
+    androidProvider = ""
+
+[zim.push.offline.providers.http]
+    # Self-hosted push gateway; empty disables it.
+    url = ""
+    secret = ""
+    timeout = "5s"
+
+[zim.push.offline.providers.apns]
+    teamId = ""
+    keyId = ""
+    topic = ""
+    privateKey = ""
+    timeout = "5s"
+
+[zim.push.offline.providers.fcm]
+    serverKey = ""
+    endpoint = ""
+    timeout = "5s"
+
+[zim.degrade]
+    kafka = false
+
+[zim.pipe]
+    brokers = ["kafka:9092"]
+# Same-group toPush consumers per push pod; bounded by toPush partitions.
+# A single consumer serializes fetch+commit and becomes the delivery bottleneck.
+pushConsumers = 24
+
+[cluster.node]
+    name = "push"
+    addr = ":0"
+    codec = "proto"
+
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+
+[registry.nacos]
+    urls = ["http://nacos:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"

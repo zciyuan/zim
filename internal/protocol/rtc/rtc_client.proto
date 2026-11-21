@@ -1,0 +1,153 @@
+// RTC signaling client protocol (op:1801-1807).
+syntax = "proto3";
+
+package zim.rtc;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/rtc;rtcwire";
+
+message CallTarget {
+  int32 type = 1; // 1 user / 2 group / 3 family
+  int64 id   = 2;
+}
+
+// 1801 邀请。
+//
+// target.type=1/3 仍是振铃模型；target.type=2（普通群）是常驻房间：
+// 创建即开始，不向成员推 phase=1 振铃，只用 msg_type=22 卡片通知群内。
+message CallInviteReq {
+  string     call_id = 1;
+  CallTarget target  = 2;
+  int32      media   = 3; // 1 voice / 2 video
+  string     extra   = 4;
+}
+
+message CallInviteRes {
+  string call_id     = 1;
+  string room        = 2;
+  int64  expire_at   = 3;
+  string token       = 4; // group only: initiator join token
+  string sfu_url     = 5;
+  int32  media       = 6;
+  int32  target_type = 7; // 1 user / 2 group / 3 family
+  repeated int64 participants = 8;
+  int64 version = 9;
+  int64 seq = 10;
+}
+
+// 1802 振铃/应答/忙线。群房间不响铃，新客户端用 1806 加入。
+message CallAnswerReq {
+  string call_id = 1;
+  bool   accept  = 2;
+}
+
+message CallAnswerRes {
+  string call_id       = 1;
+  int32  phase         = 2; // 1 ringing / 2 answered / 3 busy / 4 answered elsewhere
+  int64  from_uid      = 3;
+  string from_nickname = 4;
+  string from_avatar   = 5;
+  int32  media         = 6;
+  string room          = 7;
+  string token         = 8;
+  string sfu_url       = 9;
+  int32  target_type   = 10; // 1 user / 2 group / 3 family
+  int64  expire_at     = 11;
+  int64  version       = 12;
+  int64  seq           = 13;
+}
+
+// 1803 挂断/退出。
+//
+// 单聊与家庭组：结束整个通话；普通群（target_type=2）：只退出自己，
+// 最后一人退出时通话才结束。
+message CallHangupReq {
+  string call_id  = 1;
+  int32  reason   = 2; // 1 normal / 2 reject / 3 busy / 4 timeout / 5 network / 6 cancel
+  int64  duration = 3;
+}
+
+message CallHangupRes {
+  string call_id = 1;
+  bool   ended   = 2; // 1 when the last group participant left
+  int64  version = 3;
+  int64  seq     = 4;
+}
+
+// 1804 取消（其余端互斥/超时；仅主叫可发）。
+message CallCancelReq {
+  string call_id = 1;
+  int32  reason  = 2;
+}
+
+message CallCancelRes {
+  string call_id = 1;
+  int64  version = 2;
+  int64  seq     = 3;
+}
+
+// 1805 通话状态查询/推送。
+//
+// call_id 为空且 group_id>0 时查询该群当前通话；没有通话返回
+// state=1（空闲）且 active=false。S -> C 推送同样使用本消息（seq=0）。
+message CallStateReq {
+  string call_id  = 1;
+  int32  state    = 2;
+  int64  group_id = 3;
+  int64  since_seq = 4;
+}
+
+message CallStateRes {
+  string call_id     = 1;
+  int32  state       = 2;
+  int64  group_id    = 3;
+  bool   active      = 4;
+  int32  media       = 5;
+  string room        = 6;
+  int32  target_type = 7;
+  repeated int64 participants = 8;
+  int64  started_at  = 9;
+  int64  expire_at   = 10;
+  int64  version     = 11;
+  int64  seq         = 12;
+  repeated CallEvent events = 13;
+}
+
+// CallEvent is one replayed state transition (1805 since_seq).
+message CallEvent {
+  int64 seq     = 1;
+  int32 state   = 2;
+  int64 at      = 3;
+}
+
+// 1806 进房 token（群/家庭可随时加入）。
+message RoomTokenReq {
+  string call_id  = 1;
+  int64  group_id = 2; // join the active group call when call_id is empty
+}
+
+message RoomTokenRes {
+  string call_id     = 1;
+  string room        = 2;
+  string token       = 3;
+  string sfu_url     = 4;
+  int64  expire_at   = 5;
+  int32  media       = 6;
+  repeated int64 participants = 7;
+  int32  target_type = 8;
+  int64  version     = 9;
+  int64  seq         = 10;
+}
+
+// 1807 参与者状态。
+message ParticipantStateReq {
+  string call_id  = 1;
+  int64  uid      = 2;
+  bool   muted    = 3;
+  bool   video_on = 4;
+  int32  network  = 5;
+  int64  ack_seq  = 6;
+}
+
+message ParticipantStateRes {
+  string call_id = 1;
+}

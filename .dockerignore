@@ -1,0 +1,11 @@
+.git
+.github
+build
+_output
+run
+log
+logs
+*.exe
+*.log
+docs
+.dsh

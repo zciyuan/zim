@@ -1,0 +1,39 @@
+# Build output
+_output/
+build/
+dist/
+bin/
+
+# Runtime
+run/
+log/
+logs/
+*.log
+*.pid
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+configs/*.local.yaml
+
+# Test and tooling output
+coverage.out
+coverage.html
+*.test
+*.exe
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local-only materials (not part of the public code repo)
+.dsh/
+docs/
+AGENTS.md
+.mailmap
+deploy/remote/
+deploy/quic/
+*.bundle

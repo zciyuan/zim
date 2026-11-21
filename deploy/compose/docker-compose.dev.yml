@@ -1,0 +1,316 @@
+name: zim-dev
+
+# Local one-command stack:
+#   docker compose -f deploy/compose/docker-compose.dev.yml up -d --build
+#
+# Host ports are intentionally offset where common developer tools already use
+# the default port (PostgreSQL 5432, Redis 6379). Container-to-container
+# traffic still uses the standard service ports.
+
+x-zim-common: &zim-common
+  image: zim-server:dev
+  pull_policy: never
+  restart: unless-stopped
+  # 50k+ WS connections need one fd each; the OpenIM baseline was capped at
+  # 10k by its image default, so make the ZIM limit explicit.
+  ulimits:
+    nofile:
+      soft: 1048576
+      hard: 1048576
+  # Under 20k idle sessions + 1k msg/s the default GOGC tail showed up in
+  # P99; trade a little RSS for fewer GC cycles.
+  environment:
+    GOGC: "200"
+    GOMEMLIMIT: "4GiB"
+  depends_on:
+    zim-build:
+      condition: service_completed_successfully
+    migrate:
+      condition: service_completed_successfully
+    nacos:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    mongo:
+      condition: service_healthy
+    kafka-init:
+      condition: service_completed_successfully
+
+services:
+  zim-build:
+    image: zim-server:dev
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.dev
+      args:
+        VERSION: dev
+    entrypoint: ["/app/zim-gate", "--version"]
+    restart: "no"
+
+  nacos:
+    image: nacos/nacos-server:v2.5.5
+    environment:
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      NACOS_AUTH_ENABLE: "false"
+      JVM_XMS: 256m
+      JVM_XMX: 512m
+      JVM_XMN: 128m
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos-data:/home/nacos/data
+      - nacos-logs:/home/nacos/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8848/nacos/v1/ns/operator/metrics >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  livekit:
+    image: livekit/livekit-server:v1.13.11
+    # Development SFU. The service name doubles as the in-network DNS name used
+    # by [zim.rtc] url; the key/secret must match the node config.
+    command:
+      - "--bind"
+      - "0.0.0.0"
+      - "--node-ip"
+      # 默认回环（只在本机调试）；局域网/多设备联调用 ZIM_LAN_IP 覆盖为
+      # 本机内网地址 192.168.6.88。仓库不提交真实主机地址。
+      - "${ZIM_LAN_IP:-127.0.0.1}"
+      # Single muxed UDP port: compose publishes 7882/udp, while the default ICE
+      # range (50000-60000) is unreachable from other devices.
+      - "--udp-port"
+      - "${ZIM_RTC_UDP_PORT:-7882}"
+      # No participants for 60s => delete the SFU room; room_finished ends the
+      # server-side call even when participant_left never fired (nobody joined
+      # the SFU). Keep this short; 1807 heartbeats only refresh the call TTL.
+      - "--room.empty_timeout"
+      - "60"
+      - "--keys"
+      - "devkey: zimdevsecret012345678901234567890123456789"
+      # LiveKit is the authority on who is actually in the SFU. Without this
+      # webhook a page close that misses 1803 leaves the group room "ongoing"
+      # until the 2h Redis TTL. participant_left/room_finished let zim-api close
+      # the room when the last real participant disappears.
+      - "--config-body"
+      - |
+        webhook:
+          api_key: devkey
+          urls:
+            - http://zim-api:8080/v1/rtc/livekit/webhook
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "${ZIM_RTC_UDP_PORT:-7882}:${ZIM_RTC_UDP_PORT:-7882}/udp"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: zim
+      POSTGRES_PASSWORD: zim
+      POSTGRES_DB: zim
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zim -d zim"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ping:1}).ok' | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:3.8.0
+    environment:
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+
+  migrate:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: zim
+    volumes:
+      - ../sql:/sql:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        for file in 0001_init.up.sql 0002_social.up.sql 0003_conversation.up.sql 0004_family_auto_answer.up.sql 0005_admin_audit.up.sql 0006_admin_config.up.sql 0007_admin_report.up.sql 0008_push_cert.up.sql 0009_user_id_sequence.up.sql 0010_device.up.sql 0011_notification.up.sql 0012_webhook_dlq.up.sql 0013_notification_read.up.sql 0014_user_privacy.up.sql 0015_group_searchable.up.sql 0016_device_slot.up.sql 0017_conversation_preview.up.sql 0018_friend_request_dedup.up.sql 0019_group_apply_dedup.up.sql 0020_conversation_watermark.up.sql 0021_friend_request_updated.up.sql 0022_friend_request_stale_cleanup.up.sql dev_seed.sql; do
+          echo "applying $${file}"
+          psql -h postgres -U zim -d zim -v ON_ERROR_STOP=1 -f "/sql/$${file}"
+        done
+    restart: "no"
+
+  kafka-init:
+    image: apache/kafka:3.8.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        for spec in "zim.pipe.toRedis:24" "zim.pipe.toMongo:24" "zim.pipe.toPush:24" "zim.pipe.toPushBig:6" "zim.pipe.toOfflinePush:6" "zim.pipe.toRedis.DLQ:6" "zim.pipe.toMongo.DLQ:6" "zim.pipe.toPush.DLQ:6"; do
+          topic=$${spec%:*}
+          partitions=$${spec#*:}
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 \
+            --create --if-not-exists --topic "$$topic" --partitions "$$partitions" --replication-factor 1
+        done
+    restart: "no"
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.80
+    command:
+      - "server"
+      - "-dir=/data"
+      - "-s3"
+      - "-s3.port=8333"
+      - "-s3.config=/etc/seaweedfs/s3.json"
+      - "-master.volumeSizeLimitMB=1024"
+    ports:
+      - "9005:8333"
+    volumes:
+      - seaweedfs-data:/data
+      - ./configs/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+  zim-gate:
+    <<: *zim-common
+    command: ["/app/zim-gate", "-etc", "/configs/zim-gate"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "3553:3553"
+      - "8101:8101"
+      # HTTP/3 + WebTransport; only used when [network] transport = "webtransport".
+      - "12001:12001/udp"
+
+  zim-node-msg:
+    <<: *zim-common
+    command: ["/app/zim-node-msg", "-etc", "/configs/zim-node-msg"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8102:8102"
+
+  zim-node-conv:
+    <<: *zim-common
+    command: ["/app/zim-node-conv", "-etc", "/configs/zim-node-conv"]
+    volumes:
+      - ./configs:/configs:ro
+
+  zim-mesh-auth:
+    <<: *zim-common
+    command: ["/app/zim-mesh-auth", "-etc", "/configs/zim-mesh-auth"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./configs:/configs:ro
+
+  zim-mesh-user:
+    <<: *zim-common
+    command: ["/app/zim-mesh-user", "-etc", "/configs/zim-mesh-user"]
+    volumes:
+      - ./configs:/configs:ro
+
+  zim-mesh-relation:
+    <<: *zim-common
+    command: ["/app/zim-mesh-relation", "-etc", "/configs/zim-mesh-relation"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8202:8202"
+
+  zim-mesh-group:
+    <<: *zim-common
+    command: ["/app/zim-mesh-group", "-etc", "/configs/zim-mesh-group"]
+    volumes:
+      - ./configs:/configs:ro
+
+  zim-transfer:
+    <<: *zim-common
+    command: ["/app/zim-transfer", "-etc", "/configs/zim-transfer"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8205:8205"
+
+  zim-push:
+    <<: *zim-common
+    command: ["/app/zim-push", "-etc", "/configs/zim-push"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8204:8204"
+
+  zim-api:
+    <<: *zim-common
+    command: ["/app/zim-api", "-etc", "/configs/zim-api"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
+  zim-crontask:
+    <<: *zim-common
+    command: ["/app/zim-crontask", "-etc", "/configs/zim-crontask"]
+    volumes:
+      - ./configs:/configs:ro
+
+volumes:
+  nacos-data:
+  nacos-logs:
+  redis-data:
+  postgres-data:
+  mongo-data:
+  seaweedfs-data:
+

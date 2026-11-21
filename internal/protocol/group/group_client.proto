@@ -1,0 +1,161 @@
+// Group client wire protocol.
+syntax = "proto3";
+
+package zim.group;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/group;groupwire";
+
+message GroupMember {
+  string uid       = 1;
+  int32  role      = 2;
+  int64  mute_until = 3;
+  int64  joined_at = 4;
+}
+
+// 1301 创建群/家庭组。
+message CreateGroupReq {
+  string  name              = 1;
+  string  face_url          = 2;
+  int32   group_type        = 3;
+  repeated int64 member_ids = 4;
+  int32   need_verification = 5;
+}
+
+message CreateGroupRes {
+  string group_id    = 1;
+  string name        = 2;
+  string face_url    = 3;
+  string owner_id    = 4;
+  int32  group_type  = 5;
+  int32  max_member  = 6;
+  int32  member_count = 7;
+}
+
+// 1315 搜索群。
+message SearchGroupReq {
+  string keyword = 1;
+  int32  limit = 2;
+}
+
+message GroupSummary {
+  string group_id = 1;
+  string name = 2;
+  string face_url = 3;
+  string owner_id = 4;
+  int32  group_type = 5;
+  int32  member_count = 6;
+}
+
+message SearchGroupRes {
+  repeated GroupSummary groups = 1;
+}
+
+// 1317 群通知设置。
+message GroupNotifyReq {
+  string group_id = 1;
+  int32  recv_opt = 2;
+}
+
+// 1311 设置/取消管理员。
+message SetGroupAdminReq {
+  string group_id = 1;
+  int64  user_id = 2;
+  bool   admin = 3;
+}
+
+// 1312 禁言成员。
+message MuteMemberReq {
+  string group_id = 1;
+  int64  user_id = 2;
+  int64  until = 3;
+}
+
+// 1313 全员禁言。
+message MuteAllReq {
+  string group_id = 1;
+  int64  until = 2;
+}
+
+// 1314 我的群列表。
+message MyGroupsReq {}
+
+message MyGroupsRes {
+  repeated string group_ids = 1;
+}
+
+// 1305 申请入群。
+message ApplyJoinReq {
+  string group_id = 1;
+  string why = 2;
+}
+
+// 1306 审批入群。
+message AnswerJoinReq {
+  string group_id = 1;
+  int64  user_id = 2;
+  bool   accept = 3;
+}
+
+// 1309 更新群资料。
+message UpdateGroupReq {
+  string group_id = 1;
+  string name = 2;
+  string face_url = 3;
+  string notification = 4;
+  int32 need_verification = 5;
+  int32 look_member_info = 6;
+  int32 apply_member_friend = 7;
+}
+
+message UpdateGroupRes {
+  string group_id = 1;
+  string name = 2;
+  string face_url = 3;
+  string notification = 4;
+  int32 need_verification = 5;
+  int32 look_member_info = 6;
+  int32 apply_member_friend = 7;
+}
+
+// 1308 转让群主。
+message TransferGroupReq {
+  string group_id = 1;
+  int64 new_owner_id = 2;
+}
+
+// 1310 群成员列表。
+message GroupMembersReq {
+  string group_id = 1;
+  int32  offset   = 2;
+  int32  limit    = 3;
+}
+
+message GroupMembersRes {
+  repeated GroupMember members = 1;
+}
+
+// 1304 邀请成员。
+message InviteGroupMembersReq {
+  string group_id = 1;
+  repeated int64 user_ids = 2;
+}
+
+// 1303 主动退群。
+message QuitGroupReq {
+  string group_id = 1;
+}
+
+// 1307 踢人。
+message KickGroupMemberReq {
+  string group_id = 1;
+  int64  user_id  = 2;
+}
+
+// 1302 解散群。
+message DismissGroupReq {
+  string group_id = 1;
+}
+
+message GroupOperationRes {
+  bool ok = 1;
+}

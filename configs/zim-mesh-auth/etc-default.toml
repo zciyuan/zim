@@ -1,0 +1,36 @@
+﻿# ZIM mesh-auth bootstrap configuration.
+# Run: ./build/bin/zim-mesh-auth -etc ./configs/zim-mesh-auth
+
+pid = "./run/zim-mesh-auth.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8200"
+
+[zim.auth]
+    # Must match zim-gate and zim-node-msg.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[cluster.mesh]
+    name = "auth"
+    addr = ":0"
+    codec = "proto"
+
+[registry.nacos]
+    # Naming endpoint; keep the /nacos context path.
+    urls = ["http://127.0.0.1:8848/nacos"]
+    # Empty selects the public namespace; set a dedicated namespace ID in production.
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]

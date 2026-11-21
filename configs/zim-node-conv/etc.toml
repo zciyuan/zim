@@ -1,0 +1,36 @@
+﻿# ZIM node-conv bootstrap configuration.
+# Run: ./build/bin/zim-node-conv -etc ./configs/zim-node-conv
+
+pid = "./run/zim-node-conv.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8103"
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@127.0.0.1:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://127.0.0.1:27017/zim"
+    database = "zim"
+
+[cluster.node]
+    name = "node-conv"
+    addr = ":0"
+    codec = "proto"
+
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+
+[registry.nacos]
+    urls = ["http://127.0.0.1:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[log]
+    level = "info"
+    terminals = ["console"]

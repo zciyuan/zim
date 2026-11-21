@@ -1,0 +1,70 @@
+# ZIM lint baseline for golangci-lint v2. CI uses the same file, so a local
+# `mage lint` failure means CI will fail too.
+#
+# Two rules from AGENTS.md are enforced here rather than by review:
+#   - JSON must use github.com/dobyte/due/v2/encoding/json (depguard).
+#   - Errors must use github.com/dobyte/due/v2/errors (depguard).
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - depguard
+    - errcheck
+    - gocritic
+    - govet
+    - ineffassign
+    - misspell
+    - nolintlint
+    - revive
+    - staticcheck
+    - unused
+  settings:
+    depguard:
+      rules:
+        main:
+          deny:
+            - pkg: encoding/json
+              desc: use github.com/dobyte/due/v2/encoding/json (AGENTS.md)
+            - pkg: errors
+              desc: use github.com/dobyte/due/v2/errors (AGENTS.md)
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    revive:
+      rules:
+        - name: exported
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+  exclusions:
+    generated: strict
+    paths:
+      - ".*\\.pb\\.go$"
+    rules:
+      # Tests may use stdlib errors/json for fake failures; production code may not.
+      - path: _test\.go
+        linters:
+          - depguard
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/zciyuan/ZIM)
+      custom-order: true
+    gofmt:
+      simplify: true
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

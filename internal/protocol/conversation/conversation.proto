@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package zim.protocol.conversation;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/conversation;convpb";
+
+message ConversationItem {
+  string conversation_id = 1;
+  int32 type = 2;
+  int64 peer_id = 3;
+  int64 group_id = 4;
+  int32 recv_opt = 5;
+  int32 is_pinned = 6;
+  string last_msg_id = 7;
+  int64 last_msg_seq = 8;
+  int64 last_msg_at = 9;
+  string last_msg_brief = 10;
+  int64 read_seq = 11;
+  int64 max_seq = 12;
+  int64 unread = 13;
+  int64 updated_at = 14;
+}
+
+message ConversationListReq {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+message ConversationListRes {
+  repeated ConversationItem items = 1;
+  bool has_more = 2;
+}
+
+message ConversationPinReq {
+  string conversation_id = 1;
+  bool pinned = 2;
+}
+
+message ConversationDeleteReq {
+  string conversation_id = 1;
+}
+
+message ConversationReadReq {
+  string conversation_id = 1;
+  int64 seq = 2;
+}
+
+message ConversationReadRes {
+  int64 read_seq = 1;
+}
+
+message ConversationUnreadReq {
+  string conversation_id = 1;
+}
+
+message ConversationUnreadRes {
+  int64 unread = 1;
+  int64 max_seq = 2;
+  int64 read_seq = 3;
+}
+
+message ConversationRecvOptReq {
+  string conversation_id = 1;
+  int32 recv_opt = 2;
+}
+
+message OperationRes {
+  bool ok = 1;
+}

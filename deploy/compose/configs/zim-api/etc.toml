@@ -1,0 +1,73 @@
+# ZIM API bootstrap configuration.
+# Run: ./build/bin/zim-api -etc ./configs/zim-api
+
+pid = "./run/zim-api.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8081"
+    pprof = true
+
+[zim.auth]
+    # Must match zim-gate and zim-mesh-auth.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[zim.postgres]
+    # Leave empty to start the API without account REST (returns 900002).
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[zim.admin]
+    token = "dev-admin-token"
+    source = "zim-admin"
+
+[zim.degrade]
+    mongo = false
+
+[zim.mongo]
+    uri = "mongodb://mongo:27017/zim"
+    database = "zim"
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+[http]
+    addr = ":8080"
+
+[registry.nacos]
+    urls = ["http://nacos:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.upload]
+    provider = "s3"
+    dir = "/app/run/upload"
+    maxBytes = 5242880
+    ttl = "15m"
+
+[zim.upload.s3]
+    endpoint = "seaweedfs:8333"
+    publicEndpoint = "127.0.0.1:9005"
+    accessKey = "zim"
+    secretKey = "zim-secret"
+    bucket = "zim"
+    useSSL = false
+
+[zim.pipe]
+    brokers = ["kafka:9092"]
+
+[zim.rtc]
+# LiveKit webhook signing secret; must match livekit.yaml keys.<apiKey>.
+url = "http://livekit:7880"
+apiKey = "devkey"
+apiSecret = "zimdevsecret012345678901234567890123456789"

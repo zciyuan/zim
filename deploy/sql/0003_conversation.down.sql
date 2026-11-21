@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS zim_seq_user CASCADE;
+DROP TABLE IF EXISTS zim_conversation CASCADE;

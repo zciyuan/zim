@@ -1,0 +1,98 @@
+# Production-aligned values for ZIM.
+# Infrastructure dependencies are sized separately in deploy/helm/infra-values.yaml.
+image:
+  repository: registry.local/zim/zim-server
+  tag: dev
+  pullPolicy: IfNotPresent
+
+# Default resources; each service may override.
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: "2"
+    memory: 2Gi
+
+config:
+  nacos:
+    urls: ["http://nacos:8848/nacos"]
+    namespaceId: ""
+    groupName: "ZIM"
+    clusterName: "DEFAULT"
+  redis:
+    addrs: ["redis:6379"]
+
+configMapName: zim-config
+
+# One entry per ZIM binary. `service: true` exposes a Kubernetes Service.
+services:
+  - name: zim-gate
+    replicas: 20
+    service: true
+    healthPort: 8101
+    ports: [{name: ws, port: 3553}]
+    resources:
+      requests: {cpu: "4", memory: 4Gi}
+      limits: {cpu: "8", memory: 8Gi}
+    autoscaling: {enabled: true, minReplicas: 20, maxReplicas: 60, targetCPU: 65}
+  - name: zim-node-msg
+    replicas: 4
+    service: false
+    healthPort: 8102
+    ports: []
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+    autoscaling: {enabled: true, minReplicas: 4, maxReplicas: 20, targetCPU: 70}
+  - name: zim-node-conv
+    replicas: 4
+    service: false
+    healthPort: 8103
+    ports: []
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+  - name: zim-mesh
+    replicas: 3
+    service: false
+    healthPort: 8206
+    ports: []
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+  - name: zim-transfer
+    replicas: 6
+    service: false
+    healthPort: 8205
+    ports: []
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+    autoscaling: {enabled: true, minReplicas: 6, maxReplicas: 24, targetCPU: 65}
+  - name: zim-push
+    replicas: 8
+    service: false
+    healthPort: 8204
+    ports: []
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+    autoscaling: {enabled: true, minReplicas: 8, maxReplicas: 30, targetCPU: 70}
+  - name: zim-api
+    replicas: 4
+    service: true
+    healthPort: 8081
+    ports: [{name: http, port: 8080}]
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+    autoscaling: {enabled: true, minReplicas: 4, maxReplicas: 16, targetCPU: 70}
+  - name: zim-crontask
+    replicas: 1
+    service: false
+    healthPort: 8207
+    ports: []
+    resources:
+      requests: {cpu: 500m, memory: 512Mi}
+      limits: {cpu: "2", memory: 2Gi}

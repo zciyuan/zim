@@ -1,0 +1,79 @@
+# ZIM node-msg bootstrap configuration.
+# Run: ./build/bin/zim-node-msg -etc ./configs/zim-node-msg
+
+pid = "./run/zim-node-msg.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8102"
+    pprof = true
+
+[zim.auth]
+    # Must match zim-gate and zim-mesh-auth.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[zim.rtc]
+    provider = "livekit"
+    url = "http://livekit:7880"
+    apiKey = "devkey"
+    apiSecret = "zimdevsecret012345678901234567890123456789"
+    tokenTTL = "1h"
+    # Browser-facing SFU URL (ws/wss). LAN first: set this to the host's LAN IP
+    # (e.g. ws://192.168.6.88:7880). Production later: wss://rtc.example.com.
+    clientUrl = "ws://192.168.6.88:7880"
+
+[zim.msg]
+    # 超过该成员数的群不广播 typing。
+    typingMaxGroup = 200
+    sendRate = 200
+    sendBurst = 400
+    groupReceipt = false
+    groupReceiptMax = 500
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://mongo:27017/zim"
+    database = "zim"
+[zim.degrade]
+    kafka = false
+
+[zim.pipe]
+    brokers = ["kafka:9092"]
+    topic = "zim.pipe.toPush"
+[cluster.node]
+    name = "node-msg"
+    addr = ":0"
+    codec = "proto"
+
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+    # One BLPop connection per in-flight send; keep above send concurrency.
+    poolSize = 512
+    minIdleConns = 32
+
+[registry.nacos]
+    # Naming endpoint; keep the /nacos context path.
+    urls = ["http://nacos:8848/nacos"]
+    # Empty selects the public namespace; set a dedicated namespace ID in production.
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.webhook]
+    # Optional customer callback; empty disables delivery.
+    url = ""
+    secret = ""

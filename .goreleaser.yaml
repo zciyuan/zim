@@ -1,0 +1,143 @@
+﻿# Build the 11 IM binaries. The single runtime image is assembled by deploy/docker/Dockerfile.
+version: 2
+
+project_name: zim
+
+builds:
+  - id: zim-gate
+    main: ./cmd/zim-gate
+    binary: zim-gate
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-node-msg
+    main: ./cmd/zim-node-msg
+    binary: zim-node-msg
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-node-conv
+    main: ./cmd/zim-node-conv
+    binary: zim-node-conv
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-mesh-auth
+    main: ./cmd/zim-mesh-auth
+    binary: zim-mesh-auth
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-mesh-user
+    main: ./cmd/zim-mesh-user
+    binary: zim-mesh-user
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-mesh-relation
+    main: ./cmd/zim-mesh-relation
+    binary: zim-mesh-relation
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-mesh-group
+    main: ./cmd/zim-mesh-group
+    binary: zim-mesh-group
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-transfer
+    main: ./cmd/zim-transfer
+    binary: zim-transfer
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-push
+    main: ./cmd/zim-push
+    binary: zim-push
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-api
+    main: ./cmd/zim-api
+    binary: zim-api
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+  - id: zim-crontask
+    main: ./cmd/zim-crontask
+    binary: zim-crontask
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/zciyuan/ZIM/internal/version.Version={{ .Version }}
+      - -X github.com/zciyuan/ZIM/internal/version.Commit={{ .Commit }}
+      - -X github.com/zciyuan/ZIM/internal/version.BuildTime={{ .Date }}
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+

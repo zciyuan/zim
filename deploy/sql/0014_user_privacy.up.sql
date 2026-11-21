@@ -1,0 +1,6 @@
+﻿CREATE TABLE IF NOT EXISTS zim_user_privacy (
+    uid BIGINT PRIMARY KEY,
+    searchable SMALLINT NOT NULL DEFAULT 1,
+    add_friend SMALLINT NOT NULL DEFAULT 1,
+    updated_at BIGINT NOT NULL DEFAULT 0
+);

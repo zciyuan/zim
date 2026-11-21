@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package zim.service.user;
+
+option go_package = "github.com/zciyuan/ZIM/internal/service/user/pb;userpb";
+
+// UserProfile is the public profile shape returned by the user mesh.
+message UserProfile {
+  int64 uid = 1;
+  string username = 2;
+  string nickname = 3;
+  string avatar = 4;
+  int32 gender = 5;
+  int32 status = 6;
+  int64 updated_at = 7;
+}
+
+message GetProfileArgs {
+  int64 uid = 1;
+}
+
+message BatchGetUsersArgs {
+  repeated int64 uids = 1;
+}
+
+message BatchGetUsersReply {
+  repeated UserProfile users = 1;
+}
+
+message UpdateProfileArgs {
+  int64 uid = 1;
+  string nickname = 2;
+  string avatar = 3;
+  int32 gender = 4;
+  int64 operator_id = 5;
+}
+
+message SearchUsersArgs {
+  string keyword = 1;
+  int32 limit = 2;
+}
+
+message SearchUsersReply {
+  repeated UserProfile users = 1;
+}
+
+service User {
+  rpc GetProfile(GetProfileArgs) returns (UserProfile);
+  rpc BatchGetUsers(BatchGetUsersArgs) returns (BatchGetUsersReply);
+  rpc UpdateProfile(UpdateProfileArgs) returns (UserProfile);
+  rpc SearchUsers(SearchUsersArgs) returns (SearchUsersReply);
+}

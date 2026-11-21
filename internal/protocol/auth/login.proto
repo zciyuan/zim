@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package zim.protocol.auth;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/auth;authpb";
+
+// LoginReq is the op:1001 request. The outer frame carries opcode and seq.
+message LoginReq {
+  string token = 1;
+  int32 platform = 2;
+  string sdk = 3;
+  string device_id = 4;
+  string device_name = 5;
+}
+
+// SyncState carries the client's initial synchronization watermarks.
+message SyncState {
+  int64 conversation_version = 1;
+  int64 friend_version = 2;
+  map<string, int64> max_seqs = 3;
+}
+
+// OnlineDevice is one of the caller's currently online devices.
+message OnlineDevice {
+  int32 platform = 1;
+  string device_name = 2;
+}
+
+// CallSnapshot is the active call returned on login so a reconnecting client
+// can reconcile without racing a signaling push.
+message CallSnapshot {
+  string call_id     = 1;
+  int32  state       = 2;
+  string room        = 3;
+  int64  expire_at   = 4;
+  int32  media       = 5;
+  int32  target_type = 6;
+  repeated int64 participants = 7;
+  int64  version     = 8;
+  int64  seq         = 9;
+  string token       = 10;
+  string sfu_url     = 11;
+}
+
+// LoginRes is the op:1001 response. Server pushes reuse this shape.
+message LoginRes {
+  string uid = 1;
+  string nickname = 2;
+  string avatar = 3;
+  int64 server_time = 4;
+  SyncState sync = 5;
+  repeated OnlineDevice online_devices = 6;
+  CallSnapshot active_call = 7;
+}

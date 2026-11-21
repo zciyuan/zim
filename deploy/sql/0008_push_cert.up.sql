@@ -1,0 +1,5 @@
+﻿CREATE TABLE IF NOT EXISTS zim_push_cert (
+    platform SMALLINT PRIMARY KEY,
+    cert TEXT NOT NULL DEFAULT '',
+    updated_at BIGINT NOT NULL DEFAULT 0
+);

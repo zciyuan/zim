@@ -1,0 +1,79 @@
+# ZIM API bootstrap configuration.
+# Run: ./build/bin/zim-api -etc ./configs/zim-api
+
+pid = "./run/zim-api.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8081"
+
+[zim.auth]
+    # Must match zim-gate and zim-mesh-auth.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[zim.postgres]
+    # Leave empty to start the API without account REST (returns 900002).
+    dsn = "postgres://zim:zim@127.0.0.1:5432/zim?sslmode=disable"
+
+[zim.admin]
+    token = "dev-admin-token"
+    source = "zim-admin"
+
+[zim.degrade]
+    mongo = false
+
+[zim.mongo]
+    uri = "mongodb://127.0.0.1:27017/zim"
+    database = "zim"
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+[http]
+    addr = ":8080"
+
+[registry.nacos]
+    urls = ["http://127.0.0.1:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.upload]
+    provider = "local"
+    # Attachment store (ZIM-02 搂3.4). Secret falls back to zim.auth.secret.
+    dir = "./run/upload"
+    maxBytes = 5242880
+    ttl = "15m"
+
+[zim.upload.s3]
+    # Empty endpoint keeps the local filesystem provider.
+    endpoint = ""
+    accessKey = ""
+    secretKey = ""
+    bucket = "zim"
+    publicEndpoint = ""
+    useSSL = false
+
+[zim.rtc]
+# LiveKit webhook signing secret; must match livekit.yaml keys.<apiKey>.
+url = "http://127.0.0.1:7880"
+apiKey = "devkey"
+apiSecret = "zimdevsecret012345678901234567890123456789"
+
+
+[zim.transport]
+wsUrl = "ws://192.168.6.88:3553/ws"
+quicAddr = "192.168.6.88:12000"
+# Set to the gate's HTTP/3 endpoint, e.g. https://192.168.6.88:12001/wt,
+# when zim-gate runs with [network] transport = "webtransport".
+webtransportUrl = ""

@@ -1,0 +1,63 @@
+# External dependency sizing for production. Install these with the upstream
+# charts; ZIM does not vendor Kafka/Mongo/Redis/PostgreSQL operators.
+#
+# Kafka: 3 brokers, replication factor 3, min.insync.replicas 2.
+# Mongo: 3 shards, each a 3-node replica set, config servers x3.
+# Redis: 3 primaries + 3 replicas, sentinel/cluster, min-replicas-to-write 1.
+# PostgreSQL: 1 primary + 2 sync replicas, Patroni/CloudNativePG, PgBouncer x2.
+
+kafka:
+  replicaCount: 3
+  defaultReplicationFactor: 3
+  offsetsTopicReplicationFactor: 3
+  transactionStateLogReplicationFactor: 3
+  config:
+    min.insync.replicas: "2"
+    unclean.leader.election.enable: "false"
+    auto.create.topics.enable: "false"
+  persistence:
+    size: 1Ti
+  resources:
+    requests: {cpu: "4", memory: 8Gi}
+    limits: {cpu: "8", memory: 16Gi}
+
+mongodb:
+  shards: 3
+  replicasPerShard: 3
+  configServerReplicas: 3
+  mongosReplicas: 3
+  persistence:
+    size: 2Ti
+  resources:
+    requests: {cpu: "4", memory: 8Gi}
+    limits: {cpu: "8", memory: 16Gi}
+
+redis:
+  architecture: replication
+  primaryReplicas: 3
+  replicaCount: 3
+  sentinel:
+    enabled: true
+    quorum: 2
+  config:
+    min-replicas-to-write: "1"
+    appendonly: "yes"
+  persistence:
+    size: 256Gi
+  resources:
+    requests: {cpu: "2", memory: 8Gi}
+    limits: {cpu: "4", memory: 16Gi}
+
+postgresql:
+  primaryReplicas: 1
+  syncReplicas: 2
+  pgbouncer:
+    replicas: 2
+    poolMode: transaction
+    maxClientConn: 2000
+    defaultPoolSize: 50
+  persistence:
+    size: 1Ti
+  resources:
+    requests: {cpu: "4", memory: 16Gi}
+    limits: {cpu: "8", memory: 32Gi}

@@ -1,0 +1,208 @@
+syntax = "proto3";
+
+package zim.service.group;
+
+option go_package = "github.com/zciyuan/ZIM/internal/service/group/pb;grouppb";
+
+message GroupInfo {
+  int64 group_id = 1;
+  string name = 2;
+  string face_url = 3;
+  string notification = 4;
+  int64 owner_id = 5;
+  int32 group_type = 6;
+  int32 max_member = 7;
+  int32 need_verification = 8;
+  int32 look_member_info = 9;
+  int32 apply_member_friend = 10;
+  int32 status = 11;
+  int64 muted_until = 12;
+  int64 created_at = 13;
+  int32 member_count = 14;
+}
+
+message Membership {
+  int64 group_id = 1;
+  int64 user_id = 2;
+  int32 role = 3;
+  int64 mute_until = 4;
+  int64 joined_at = 5;
+}
+
+message CreateGroupArgs {
+  int64 owner_id = 1;
+  string name = 2;
+  string face_url = 3;
+  int32 group_type = 4;
+  repeated int64 member_ids = 5;
+  int32 need_verification = 6;
+}
+
+message GetGroupArgs {
+  int64 group_id = 1;
+}
+
+message UpdateGroupArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  string name = 3;
+  string face_url = 4;
+  string notification = 5;
+  int32 need_verification = 6;
+  int32 look_member_info = 7;
+  int32 apply_member_friend = 8;
+}
+
+message GroupApplyItem {
+  int64 id = 1;
+  int64 group_id = 2;
+  int64 user_id = 3;
+  string why = 4;
+  int32 status = 5;
+  int64 created_at = 6;
+  int64 handled_at = 7;
+}
+
+message ListAppliesArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int32 status = 3;
+  int32 offset = 4;
+  int32 limit = 5;
+}
+
+message ListAppliesReply {
+  repeated GroupApplyItem applies = 1;
+}
+
+message SearchGroupsArgs {
+  string keyword = 1;
+  int32 limit = 2;
+}
+
+message SearchGroupsReply {
+  repeated GroupInfo groups = 1;
+}
+
+message ApplyJoinArgs {
+  int64 group_id = 1;
+  int64 user_id = 2;
+  string why = 3;
+}
+
+message AnswerJoinArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 user_id = 3;
+  bool accept = 4;
+}
+
+message TransferGroupArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 new_owner_id = 3;
+}
+
+message DismissGroupArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+}
+
+message QuitGroupArgs {
+  int64 group_id = 1;
+  int64 user_id = 2;
+}
+
+message InviteMembersArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  repeated int64 user_ids = 3;
+}
+
+message RemoveMemberArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 user_id = 3;
+}
+
+message MembersArgs {
+  int64 group_id = 1;
+  int32 offset = 2;
+  int32 limit = 3;
+}
+
+message MembersReply {
+  repeated Membership members = 1;
+}
+
+message MyGroupsArgs {
+  int64 user_id = 1;
+}
+
+message MyGroupsReply {
+  repeated GroupInfo groups = 1;
+}
+
+message SetAdminArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 user_id = 3;
+  bool admin = 4;
+}
+
+message MuteMemberArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 user_id = 3;
+  int64 until = 4;
+}
+
+message MuteAllArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 until = 3;
+}
+
+message GetMembershipArgs {
+  int64 group_id = 1;
+  int64 user_id = 2;
+}
+
+message GetMembershipReply {
+  GroupInfo group = 1;
+  Membership member = 2;
+}
+
+message MemberIDsArgs {
+  int64 group_id = 1;
+}
+
+message MemberIDsReply {
+  repeated int64 user_ids = 1;
+}
+
+message OperationReply {
+  bool ok = 1;
+}
+
+service Group {
+  rpc CreateGroup(CreateGroupArgs) returns (GroupInfo);
+  rpc GetGroup(GetGroupArgs) returns (GroupInfo);
+  rpc UpdateGroup(UpdateGroupArgs) returns (GroupInfo);
+  rpc SearchGroups(SearchGroupsArgs) returns (SearchGroupsReply);
+  rpc ListApplies(ListAppliesArgs) returns (ListAppliesReply);
+  rpc ApplyJoin(ApplyJoinArgs) returns (OperationReply);
+  rpc AnswerJoin(AnswerJoinArgs) returns (OperationReply);
+  rpc TransferGroup(TransferGroupArgs) returns (OperationReply);
+  rpc DismissGroup(DismissGroupArgs) returns (OperationReply);
+  rpc QuitGroup(QuitGroupArgs) returns (OperationReply);
+  rpc InviteMembers(InviteMembersArgs) returns (OperationReply);
+  rpc RemoveMember(RemoveMemberArgs) returns (OperationReply);
+  rpc Members(MembersArgs) returns (MembersReply);
+  rpc MyGroups(MyGroupsArgs) returns (MyGroupsReply);
+  rpc SetAdmin(SetAdminArgs) returns (OperationReply);
+  rpc MuteMember(MuteMemberArgs) returns (OperationReply);
+  rpc MuteAll(MuteAllArgs) returns (OperationReply);
+  rpc GetMembership(GetMembershipArgs) returns (GetMembershipReply);
+  rpc MemberIDs(MemberIDsArgs) returns (MemberIDsReply);
+}

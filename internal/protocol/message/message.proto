@@ -1,0 +1,206 @@
+syntax = "proto3";
+
+package zim.protocol.message;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/message;msgpb";
+
+message MessageItem {
+  string server_msg_id = 1;
+  string client_msg_id = 2;
+  string conversation_id = 3;
+  int64 seq = 4;
+  int64 send_id = 5;
+  int64 recv_id = 6;
+  int64 group_id = 7;
+  int32 msg_type = 8;
+  string content = 9;
+  repeated string at_user_ids = 10;
+  int64 send_time = 11;
+  int32 status = 12;
+  repeated Reaction reactions = 13;
+}
+
+message SendSingleReq {
+  string client_msg_id = 1;
+  int64 recv_id = 2;
+  int32 msg_type = 3;
+  string content = 4;
+  bool no_offline = 5;
+  bool no_notification = 6;
+  bool read_receipt = 7;
+}
+
+message SendSingleRes {
+  string server_msg_id = 1;
+  int64 seq = 2;
+  int64 send_time = 3;
+}
+
+message SendGroupReq {
+  string client_msg_id = 1;
+  int64 group_id = 2;
+  int32 msg_type = 3;
+  string content = 4;
+  repeated string at_user_ids = 5;
+  bool no_offline = 6;
+  bool no_notification = 7;
+}
+
+message SendGroupRes {
+  string server_msg_id = 1;
+  int64 seq = 2;
+  int64 send_time = 3;
+  int64 unread_count = 4;
+}
+
+message PullBySeqReq {
+  string conversation_id = 1;
+  int64 begin_seq = 2;
+  int64 end_seq = 3;
+  int32 limit = 4;
+}
+
+message PullBySeqRes {
+  repeated MessageItem messages = 1;
+  bool has_more = 2;
+}
+
+message ReadReceiptReq {
+  string conversation_id = 1;
+  int64 seq = 2;
+}
+
+message ReadReceiptRes {
+  int64 read_seq = 1;
+}
+
+message RecallReq {
+  string conversation_id = 1;
+  string server_msg_id = 2;
+}
+
+message OperationRes {
+  bool ok = 1;
+}
+
+// 1507 编辑消息（仅发送者、仅在 2 分钟内）。
+message EditMessageReq {
+  string conversation_id = 1;
+  string server_msg_id = 2;
+  string content = 3;
+}
+
+// 1508 删除消息（仅发送者；对方看到「已删除」占位）。
+message DeleteMessageReq {
+  string conversation_id = 1;
+  string server_msg_id = 2;
+}
+
+// 1512 会话内搜索。
+message SearchMessageReq {
+  string conversation_id = 1;
+  string keyword = 2;
+  int32 limit = 3;
+}
+
+message SearchMessageRes {
+  repeated MessageItem messages = 1;
+}
+
+// 1515/1516 表情回应：同一 (conversation, seq, uid, emoji) 唯一。
+message AddReactionReq {
+  string conversation_id = 1;
+  string server_msg_id = 2;
+  string emoji = 3;
+}
+
+message RemoveReactionReq {
+  string conversation_id = 1;
+  string server_msg_id = 2;
+  string emoji = 3;
+}
+
+// Reaction 随 MessageItem 返回（1511/1512/1901）。
+message Reaction {
+  string emoji = 1;
+  int32 count = 2;
+  bool mine = 3;
+}
+
+// 1504 引用回复：server 端回填被引用消息的摘要，防止伪造。
+message QuoteMessageReq {
+  string client_msg_id = 1;
+  int64  recv_id = 2;
+  int64  group_id = 3;
+  string server_msg_id = 4;
+  string content = 5;
+}
+
+message QuoteMessageRes {
+  string server_msg_id = 1;
+  int64  seq = 2;
+  int64  send_time = 3;
+}
+
+// 1503 合并转发：把多条消息合并成一张聊天记录卡片。
+message MergeMessageReq {
+  string          client_msg_id   = 1;
+  int64           recv_id         = 2;
+  int64           group_id        = 3;
+  repeated string server_msg_ids  = 4;
+  string          title           = 5;
+}
+
+message MergeMessageRes {
+  string server_msg_id = 1;
+  int64  seq           = 2;
+  int64  send_time     = 3;
+}
+
+// 1906 已读同步推送（单聊）：对端读到 seq。
+message ReadSyncPush {
+  string conversation_id = 1;
+  int64  uid             = 2;
+  int64  read_seq        = 3;
+}
+
+// 1517 输入中状态（客户端上报，服务端只做转发）。
+message TypingReq {
+  string conversation_id = 1;
+  bool   typing          = 2;
+}
+
+// 1908 输入中推送。
+message TypingPush {
+  string conversation_id = 1;
+  int64  uid             = 2;
+  bool   typing          = 3;
+}
+
+// 1909 好友事件推送（申请/同意/删除/拉黑）。
+message FriendEventPush {
+  int32 kind     = 1; // 1 request / 2 accepted / 3 deleted / 4 blocked / 5 unblocked
+  int64 from_uid = 2;
+  int64 to_uid   = 3;
+}
+
+// 1106 subscribe online status.
+message SubscribeOnlineReq {
+  repeated int64 uids = 1;
+}
+
+// 1106 online snapshot.
+message SubscribeOnlineRes {
+  repeated OnlineUser users = 1;
+}
+
+message OnlineUser {
+  int64 uid    = 1;
+  bool  online = 2;
+}
+
+// 1903 online status change.
+message OnlineChangePush {
+  int64 uid    = 1;
+  bool  online = 2;
+}

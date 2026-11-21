@@ -1,0 +1,120 @@
+// Sync protocol: append-only version-log incremental reads.
+syntax = "proto3";
+
+package zim.sync;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/sync;syncwire";
+
+// SyncChange is one insert/update/delete row.
+message SyncChange {
+  string obj_id  = 1;
+  string state   = 2;
+  int64  version = 3;
+  int64  mtime   = 4;
+}
+
+// 1605 会话增量同步。
+message SyncConversationReq {
+  int64 version = 1;
+  int32 limit   = 2;
+}
+
+message SyncConversationRes {
+  int64              version   = 1;
+  repeated SyncChange changes  = 2;
+  bool               has_more  = 3;
+}
+
+// 1603 好友增量同步。
+message SyncFriendReq {
+  int64 version = 1;
+  int32 limit   = 2;
+}
+
+message SyncFriendRes {
+  int64              version  = 1;
+  repeated SyncChange changes = 2;
+  bool               has_more = 3;
+}
+
+// 1604 群成员增量同步。
+message SyncGroupMemberReq {
+  int64 group_id = 1;
+  int64 version  = 2;
+  int32 limit    = 3;
+}
+
+message SyncGroupMemberRes {
+  int64              version  = 1;
+  repeated SyncChange changes = 2;
+  bool               has_more = 3;
+}
+
+// SyncRange is one conversation's missing seq window (inclusive).
+message SyncRange {
+  string conv_id  = 1;
+  int64  from_seq = 2;
+  int64  to_seq   = 3;
+}
+
+// 1601 同步差异探测。
+message SyncCheckReq {
+  int64              conversation_version = 1;
+  int64              friend_version       = 2;
+  map<string, int64> max_seqs             = 3;
+}
+
+message SyncCheckRes {
+  int64             conversation_version = 1;
+  int64             friend_version       = 2;
+  bool              friend_changed       = 3;
+  bool              full_sync_required   = 4;
+  bool              truncated            = 5;
+  repeated SyncRange conversation_diff   = 6;
+  int64             server_time          = 7;
+}
+
+// 1514 离散 seq 补洞。
+message SyncMissingItem {
+  string server_msg_id = 1;
+  string client_msg_id = 2;
+  int64  seq           = 3;
+  int64  send_id       = 4;
+  int64  recv_id       = 5;
+  int64  group_id      = 6;
+  int32  msg_type      = 7;
+  string content       = 8;
+  int64  send_time     = 9;
+  int32  status        = 10;
+}
+
+message SyncMissingReq {
+  string         conversation_id = 1;
+  repeated int64 seqs            = 2;
+  int32          limit           = 3;
+}
+
+message SyncMissingRes {
+  repeated SyncMissingItem messages = 1;
+  repeated int64           missing  = 2;
+}
+
+// 1606 FullSync: paged snapshot by type.
+message FullSyncReq {
+  string type   = 1;
+  string cursor = 2;
+  int32  limit  = 3;
+}
+
+message FullSyncItem {
+  string id      = 1;
+  int64  version = 2;
+  bytes  data    = 3;
+}
+
+message FullSyncRes {
+  string                type        = 1;
+  string                next_cursor = 2;
+  bool                  has_more    = 3;
+  repeated FullSyncItem items       = 4;
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package zim.contract;
+
+option go_package = "github.com/zciyuan/ZIM/zimfw/contract;contract";
+
+// Envelope is the fixed body of every ZIM WebSocket frame.
+//
+// The outer frame header carries the same opcode so that the gateway can
+// forward a message without decoding the protobuf body. Responses and
+// server pushes set code/message; requests leave both empty.
+message Envelope {
+  int32 opcode = 1;
+  bytes payload = 2;
+  int32 code = 3;
+  string message = 4;
+}

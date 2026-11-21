@@ -1,0 +1,76 @@
+# ZIM node-msg bootstrap configuration.
+# Run: ./build/bin/zim-node-msg -etc ./configs/zim-node-msg
+
+pid = "./run/zim-node-msg.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8102"
+
+[zim.auth]
+    # Must match zim-gate and zim-mesh-auth.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[zim.rtc]
+    provider = "dummy"
+    url = ""
+    apiKey = ""
+    apiSecret = ""
+    tokenTTL = "1h"
+    # Browser-facing SFU URL (ws/wss). Empty falls back to wss://rtc.local.
+    clientUrl = "ws://127.0.0.1:7880"
+
+[zim.msg]
+    sendRate = 200
+    sendBurst = 400
+    groupReceipt = false
+    groupReceiptMax = 500
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@127.0.0.1:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://127.0.0.1:27017/zim"
+    database = "zim"
+[zim.degrade]
+    kafka = false
+
+[zim.pipe]
+    brokers = ["127.0.0.1:9092"]
+    topic = "zim.pipe.toPush"
+[cluster.node]
+    name = "node-msg"
+    addr = ":0"
+    codec = "proto"
+
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+    # Each in-flight send holds one BLPop connection while waiting for the
+    # transfer result. Keep this above the expected per-node send concurrency.
+    poolSize = 512
+    minIdleConns = 32
+
+[registry.nacos]
+    # Naming endpoint; keep the /nacos context path.
+    urls = ["http://127.0.0.1:8848/nacos"]
+    # Empty selects the public namespace; set a dedicated namespace ID in production.
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.webhook]
+    # Optional customer callback; empty disables delivery.
+    url = ""
+    secret = ""

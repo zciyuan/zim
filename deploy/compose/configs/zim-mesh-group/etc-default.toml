@@ -1,0 +1,39 @@
+﻿# ZIM zim-mesh-group bootstrap configuration.
+# Run: ./build/bin/zim-mesh-group -etc ./configs/zim-mesh-group
+
+pid = "./run/zim-mesh-group.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8203"
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://mongo:27017/zim"
+    database = "zim"
+
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+
+[cluster.mesh]
+    name = "group"
+    addr = ":0"
+    codec = "proto"
+
+[registry.nacos]
+    urls = ["http://nacos:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]

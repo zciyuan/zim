@@ -1,0 +1,11 @@
+{
+  "identities": [
+    {
+      "name": "zim",
+      "credentials": [
+        {"accessKey": "zim", "secretKey": "zim-secret"}
+      ],
+      "actions": ["Admin", "Read", "Write"]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+# ZIM gate bootstrap configuration.
+# Run: mage buildService zim-gate && ./build/bin/zim-gate -etc ./configs/zim-gate
+
+pid = "./run/zim-gate.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    # Liveness/readiness and version endpoint.
+    addr = ":8101"
+
+[zim.gate]
+    perIPRate = 500
+    perIPBurst = 1000
+    connRate = 2000
+    origins = "*"
+    # Only parse X-Forwarded-For when the direct peer is in these CIDRs.
+    trustedProxies = ["127.0.0.1/32", "::1/128"]
+[zim.auth]
+    # Development secret. Override in every non-dev environment.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[network.ws.server]
+    addr = ":3553"
+    path = "/ws"
+    maxConnNum = 100000
+    authorizeTimeout = "45s"
+    # Binary heartbeat keeps idle sessions alive; without it due's gate drops
+    # sessions that see no frames for ~30s (visible as a reconnect every 30s).
+    heartbeatInterval = "20s"
+    writeTimeout = "10s"
+    writeQueueSize = 256
+
+[cluster.gate]
+    name = "gate"
+    addr = ":0"
+    dispatch = "rr"
+
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+
+[registry.nacos]
+    # Naming endpoint; keep the /nacos context path.
+    urls = ["http://nacos:8848/nacos"]
+    # Empty selects the public namespace; set a dedicated namespace ID in production.
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[network]
+# ws (default), quic, or webtransport. quic/webtransport run the same binary as
+# separate UDP deployments; browsers must use webtransport.
+transport = "ws"
+
+[network.quic.server]
+# Temporary public UDP range is 12000-12010; pick one port per gate instance.
+addr = ":12000"
+certFile = "/etc/zim/quic/tls.crt"
+keyFile = "/etc/zim/quic/tls.key"
+alpn = "zim/1"
+
+[network.webtransport.server]
+# HTTP/3 + WebTransport endpoint. One session = one ZIM connection on one
+# bidirectional stream; ticket/token/platform/sdk are validated before CONNECT.
+addr = ":12001"
+# One WebTransport session costs ~11 goroutines; cap below the WS budget.
+maxConnNum = 20000
+path = "/wt"
+certFile = "/etc/zim/quic/tls.crt"
+keyFile = "/etc/zim/quic/tls.key"
+authorizeTimeout = "45s"
+heartbeatInterval = "20s"
+heartbeatMechanism = "resp"
+writeTimeout = "10s"
+writeQueueSize = 256
+handshakeTimeout = "10s"
+closeTimeout = "5s"

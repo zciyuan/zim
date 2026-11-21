@@ -1,0 +1,32 @@
+// Group change events pushed to members (op:1904).
+//
+// The event carries ids only; clients refresh the group/conversation from REST
+// when they need the full state.
+syntax = "proto3";
+
+package zim.protocol.group;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/group;groupwire";
+
+// GroupEvent kinds.
+enum GroupEventKind {
+  GROUP_EVENT_UNKNOWN          = 0;
+  GROUP_EVENT_MEMBER_JOINED    = 1;
+  GROUP_EVENT_MEMBER_LEFT      = 2;
+  GROUP_EVENT_MEMBER_KICKED    = 3;
+  GROUP_EVENT_UPDATED          = 4;
+  GROUP_EVENT_OWNER_TRANSFERRED = 5;
+  GROUP_EVENT_ADMIN_CHANGED    = 6;
+  GROUP_EVENT_DISMISSED        = 7;
+  GROUP_EVENT_MUTED            = 8;
+  GROUP_EVENT_APPLY            = 9;
+}
+
+message GroupEvent {
+  int64 group_id  = 1;
+  int32 kind      = 2;
+  int64 actor_id  = 3;
+  int64 target_id = 4;
+  string name     = 5;
+  int64 at        = 6;
+}

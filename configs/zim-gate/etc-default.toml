@@ -1,0 +1,76 @@
+# ZIM gate bootstrap configuration.
+# Run: mage buildService zim-gate && ./build/bin/zim-gate -etc ./configs/zim-gate
+
+pid = "./run/zim-gate.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    # Liveness/readiness and version endpoint.
+    addr = ":8101"
+
+[zim.gate]
+    perIPRate = 500
+    perIPBurst = 1000
+    connRate = 2000
+    origins = "*"
+[zim.auth]
+    # Development secret. Override in every non-dev environment.
+    secret = "dev-only-zim-secret-change-me"
+    accessTTL = "168h"
+    refreshTTL = "2160h"
+
+[network.ws.server]
+    addr = ":3553"
+    path = "/ws"
+    maxConnNum = 100000
+    authorizeTimeout = "45s"
+    # ZIM uses WebSocket ping/pong; due's binary heartbeat is disabled.
+    heartbeatInterval = "20s"
+    writeTimeout = "10s"
+    writeQueueSize = 256
+
+[cluster.gate]
+    name = "gate"
+    addr = ":0"
+    dispatch = "rr"
+
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+
+[registry.nacos]
+    # Naming endpoint; keep the /nacos context path.
+    urls = ["http://127.0.0.1:8848/nacos"]
+    # Empty selects the public namespace; set a dedicated namespace ID in production.
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[network]
+transport = "ws"
+
+[network.quic.server]
+addr = ":12000"
+certFile = "/etc/zim/quic/tls.crt"
+keyFile = "/etc/zim/quic/tls.key"
+
+[network.webtransport.server]
+addr = ":12001"
+# One WebTransport session costs ~11 goroutines; cap below the WS budget.
+maxConnNum = 20000
+path = "/wt"
+certFile = "/etc/zim/quic/tls.crt"
+keyFile = "/etc/zim/quic/tls.key"
+authorizeTimeout = "45s"
+heartbeatInterval = "20s"
+heartbeatMechanism = "resp"
+writeTimeout = "10s"
+writeQueueSize = 256
+handshakeTimeout = "10s"
+closeTimeout = "5s"

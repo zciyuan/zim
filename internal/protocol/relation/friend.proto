@@ -1,0 +1,38 @@
+// Friend relation write operations over the WS channel (op:1201/1202/1204/1208).
+//
+// These mirror the REST write endpoints (ZIM-02 §3.3): a binary or long-lived
+// client can manage friends without HTTP. Requests carry only ids; the server
+// resolves the caller from the session.
+syntax = "proto3";
+
+package zim.protocol.relation;
+
+option go_package = "github.com/zciyuan/ZIM/internal/protocol/relation;relwire";
+
+// 1201 AddFriend
+message AddFriendReq {
+  int64  friend_id = 1;
+  string why       = 2;
+}
+
+// 1202 AnswerFriend
+message AnswerFriendReq {
+  int64 friend_id = 1;
+  bool  accept    = 2;
+}
+
+// 1204 DeleteFriend
+message DeleteFriendReq {
+  int64 friend_id = 1;
+}
+
+// 1208 AddBlack（remove=true 表示移出黑名单）
+message AddBlackReq {
+  int64 uid    = 1;
+  bool  remove = 2;
+}
+
+// 1201/1202/1204/1208 共用响应
+message RelationOperationRes {
+  bool ok = 1;
+}

@@ -1,0 +1,46 @@
+# ZIM transfer bootstrap configuration.
+# Run: ./build/bin/zim-transfer -etc ./configs/zim-transfer
+
+pid = "./run/zim-transfer.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8205"
+    pprof = true
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://mongo:27017/zim"
+    database = "zim"
+
+[zim.degrade]
+    kafka = false
+
+[zim.transfer]
+    # Fixed conversation-shard workers; keep one conversation on one shard.
+    workers = 256
+
+[zim.pipe]
+    brokers = ["kafka:9092"]
+# Same-group consumers per topic; topics have 24 partitions.
+consumersPerTopic = 16
+
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.webhook]
+    url = ""
+    secret = ""
+
+[zim.seq]
+    # ADR-0019: block=1 keeps seq strictly contiguous; raise only when gaps are acceptable.
+    block = 1

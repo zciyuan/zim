@@ -1,0 +1,31 @@
+# ZIM transfer bootstrap configuration.
+# Run: ./build/bin/zim-transfer -etc ./configs/zim-transfer
+
+pid = "./run/zim-transfer.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8205"
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://mongo:27017/zim"
+    database = "zim"
+
+[zim.degrade]
+    kafka = false
+
+[zim.pipe]
+    brokers = ["kafka:9092"]
+
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+
+[log]
+    level = "info"
+    terminals = ["console"]

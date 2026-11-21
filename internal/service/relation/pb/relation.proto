@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package zim.service.relation;
+
+option go_package = "github.com/zciyuan/ZIM/internal/service/relation/pb;relationpb";
+
+message OperationReply {
+  bool ok = 1;
+}
+
+message SendFriendRequestArgs {
+  int64 from_id = 1;
+  int64 to_id = 2;
+  string why = 3;
+}
+
+message AnswerFriendArgs {
+  int64 from_id = 1;
+  int64 to_id = 2;
+  bool accept = 3;
+}
+
+message FriendRequestItem {
+  int64 id = 1;
+  int64 from_id = 2;
+  int64 to_id = 3;
+  string why = 4;
+  int32 status = 5;
+  int64 created_at = 6;
+}
+
+message ListFriendRequestsArgs {
+  int64 uid = 1;
+  bool inbound = 2;
+}
+
+message FriendRequestsReply {
+  repeated FriendRequestItem requests = 1;
+}
+
+message DeleteFriendArgs {
+  int64 uid = 1;
+  int64 friend_id = 2;
+}
+
+message FriendItem {
+  int64 friend_id = 1;
+  string remark = 2;
+  int32 pinned = 3;
+  int64 created_at = 4;
+}
+
+message ListFriendsArgs {
+  int64 uid = 1;
+}
+
+message FriendsReply {
+  repeated FriendItem friends = 1;
+}
+
+message UpdateRemarkArgs {
+  int64 uid = 1;
+  int64 friend_id = 2;
+  string remark = 3;
+}
+
+message PinFriendArgs {
+  int64 uid = 1;
+  int64 friend_id = 2;
+  bool pinned = 3;
+}
+
+message AddBlackArgs {
+  int64 uid = 1;
+  int64 black_id = 2;
+  bool remove = 3;
+}
+
+message ListBlacklistArgs {
+  int64 uid = 1;
+}
+
+message ListBlacklistReply {
+  repeated int64 uids = 1;
+}
+
+message IsFriendArgs {
+  int64 uid = 1;
+  int64 target_id = 2;
+}
+
+message IsFriendReply {
+  bool friend = 1;
+  bool black = 2;
+}
+
+service Relation {
+  rpc SendFriendRequest(SendFriendRequestArgs) returns (OperationReply);
+  rpc AnswerFriend(AnswerFriendArgs) returns (OperationReply);
+  rpc ListFriendRequests(ListFriendRequestsArgs) returns (FriendRequestsReply);
+  rpc DeleteFriend(DeleteFriendArgs) returns (OperationReply);
+  rpc ListFriends(ListFriendsArgs) returns (FriendsReply);
+  rpc UpdateRemark(UpdateRemarkArgs) returns (OperationReply);
+  rpc PinFriend(PinFriendArgs) returns (OperationReply);
+  rpc AddBlack(AddBlackArgs) returns (OperationReply);
+  rpc ListBlacklist(ListBlacklistArgs) returns (ListBlacklistReply);
+  rpc IsFriend(IsFriendArgs) returns (IsFriendReply);
+}

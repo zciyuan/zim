@@ -1,0 +1,55 @@
+# ZIM push bootstrap configuration.
+# Run: ./build/bin/zim-push -etc ./configs/zim-push
+
+pid = "./run/zim-push.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8204"
+
+[zim.push]
+    latencyWarnMs = 200
+    routeCacheTTL = "5s"
+    routeCacheSize = 200000
+    locateBatchSize = 500
+    batchSize = 500
+    sendConcurrency = 16
+    rpcTimeout = "3s"
+
+[zim.push.offline]
+    # Per-user offline push rate limit (DL-091).
+    ratePerMinute = 5
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@127.0.0.1:5432/zim?sslmode=disable"
+
+[zim.degrade]
+    kafka = false
+
+[zim.pipe]
+    brokers = ["127.0.0.1:9092"]
+    pushConsumers = 8
+
+[cluster.node]
+    name = "push"
+    addr = ":0"
+    codec = "proto"
+
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+
+[registry.nacos]
+    urls = ["http://127.0.0.1:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]

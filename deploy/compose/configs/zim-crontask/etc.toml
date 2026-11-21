@@ -1,0 +1,42 @@
+# ZIM crontask bootstrap configuration.
+# Run: ./build/bin/zim-crontask -etc ./configs/zim-crontask
+
+pid = "./run/zim-crontask.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8206"
+
+[zim.crontask]
+    interval = "1h"
+
+[zim.message]
+    # Retention for Mongo message blocks.
+    retention = "720h"
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@postgres:5432/zim?sslmode=disable"
+
+[zim.mongo]
+    uri = "mongodb://mongo:27017/zim"
+    database = "zim"
+
+[lock.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim:lock"
+[locate.redis]
+    addrs = ["redis:6379"]
+    prefix = "zim"
+
+[log]
+    level = "info"
+    terminals = ["console"]
+
+[zim.pipe]
+    brokers = ["kafka:9092"]
+
+[zim.upload]
+    dir = "./run/upload"
+    retention = "720h"

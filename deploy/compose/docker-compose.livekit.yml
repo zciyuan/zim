@@ -1,0 +1,36 @@
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: zim-dev-livekit
+    command: ["--config", "/etc/livekit.yaml"]
+    volumes:
+      - ../livekit/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    networks:
+      - zim
+
+  coturn:
+    image: coturn/coturn:4.6.3
+    container_name: zim-dev-coturn
+    command:
+      - "-n"
+      - "--lt-cred-mech"
+      - "--user=zim:zimturn"
+      - "--realm=localhost"
+      - "--listening-port=3478"
+      - "--fingerprint"
+      - "--allow-loopback-peers"
+      - "--no-cli"
+    ports:
+      - "3478:3478/tcp"
+      - "3478:3478/udp"
+    networks:
+      - zim
+
+networks:
+  zim:
+    external: true
+    name: zim-dev_default

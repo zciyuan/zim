@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package zim.service.auth;
+
+option go_package = "github.com/zciyuan/ZIM/internal/service/auth/pb;authpb";
+
+// VerifyTokenArgs asks the auth mesh to validate an access token.
+message VerifyTokenArgs {
+  string token = 1;
+  int32 platform = 2;
+  string sdk = 3;
+}
+
+// VerifyTokenReply returns the identity carried by a valid token.
+message VerifyTokenReply {
+  int64 uid = 1;
+  int32 platform = 2;
+  int64 expires_at = 3;
+}
+
+// Auth is the internal gRPC service exposed by zim-mesh-auth.
+service Auth {
+  rpc VerifyToken(VerifyTokenArgs) returns (VerifyTokenReply);
+  rpc Login(LoginArgs) returns (TokenPair);
+  rpc Register(RegisterArgs) returns (TokenPair);
+  rpc Refresh(RefreshArgs) returns (TokenPair);
+}
+
+message LoginArgs {
+  string username = 1;
+  string password = 2;
+  int32 platform = 3;
+}
+
+message RegisterArgs {
+  string username = 1;
+  string password = 2;
+  string nickname = 3;
+  int32 platform = 4;
+}
+
+message RefreshArgs {
+  string refresh_token = 1;
+}
+
+message TokenPair {
+  int64 uid = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  int64 expires_in = 4;
+  int64 refresh_expires_in = 5;
+}
