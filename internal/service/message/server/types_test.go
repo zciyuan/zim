@@ -66,6 +66,47 @@ func (f *fakeRepo) Recall(_ context.Context, id string) error {
 	return nil
 }
 
+func (f *fakeRepo) Burn(_ context.Context, id string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, msg := range f.messages {
+		if msg.ServerMsgID == id {
+			msg.IsBurned = true
+			msg.Content = ""
+		}
+	}
+	return nil
+}
+
+func (f *fakeRepo) StartBurnCountdown(_ context.Context, id string, expireAt int64) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, msg := range f.messages {
+		if msg.ServerMsgID == id {
+			msg.BurnExpireAt = expireAt
+		}
+	}
+	return nil
+}
+
+func (f *fakeRepo) FindBurnExpired(_ context.Context, now int64, limit int) ([]*model.Message, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	result := make([]*model.Message, 0)
+	for _, msg := range f.messages {
+		if msg.BurnTTL > 0 && !msg.IsBurned {
+			if (msg.BurnExpireAt > 0 && now >= msg.BurnExpireAt) ||
+				(msg.MaxRetentionAt > 0 && now >= msg.MaxRetentionAt) {
+				result = append(result, msg)
+			}
+		}
+	}
+	if len(result) > limit {
+		result = result[:limit]
+	}
+	return result, nil
+}
+
 type fakeSeq struct {
 	mu   sync.Mutex
 	next int64

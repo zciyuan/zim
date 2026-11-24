@@ -2,6 +2,10 @@ package server
 
 import (
 	"context"
+	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/zciyuan/ZIM/internal/service/group/pb"
 )
@@ -99,4 +103,48 @@ func (s *Server) ListApplies(ctx context.Context, args *pb.ListAppliesArgs) (*pb
 // SearchGroups handles the RPC.
 func (s *Server) SearchGroups(ctx context.Context, args *pb.SearchGroupsArgs) (*pb.SearchGroupsReply, error) {
 	return s.doSearchGroups(ctx, searchGroupsArgs{Keyword: args.GetKeyword(), Limit: args.GetLimit()})
+}
+
+// SetGroupSecurity handles op:1318 (ADR-0043).
+func (s *Server) SetGroupSecurity(ctx context.Context, args *pb.SetGroupSecurityArgs) (*pb.SecuritySettingsReply, error) {
+	return s.doSetGroupSecurity(ctx, setGroupSecurityArgs{
+		GroupID: args.GetGroupId(), OperatorID: args.GetOperatorId(), MuteAll: args.GetMuteAll(),
+		ScheduledMuteEnable: args.GetScheduledMuteEnable(), ScheduledMuteStart: args.GetScheduledMuteStart(),
+		ScheduledMuteEnd: args.GetScheduledMuteEnd(), ScheduledTimezone: args.GetScheduledTimezone(),
+		DefaultMuteFlags: args.GetDefaultMuteFlags(), NewMemberMuteSec: args.GetNewMemberMuteSec(),
+		AntiSpamEnable: args.GetAntiSpamEnable(), AntiSpamWindowSec: args.GetAntiSpamWindowSec(),
+		AntiSpamMaxMsgs: args.GetAntiSpamMaxMsgs(), SensitiveAutoMuteS: args.GetSensitiveAutoMuteS(),
+		AntiScreenshot: args.GetAntiScreenshot(), WatermarkEnable: args.GetWatermarkEnable(),
+		ScreenshotPenalty: args.GetScreenshotPenalty(),
+	})
+}
+
+// SetMemberRestriction handles op:1319 (ADR-0043).
+func (s *Server) SetMemberRestriction(ctx context.Context, args *pb.SetMemberRestrictionArgs) (*pb.OperationReply, error) {
+	return s.doSetMemberRestriction(ctx, setMemberRestrictionArgs{
+		GroupID: args.GetGroupId(), OperatorID: args.GetOperatorId(), UserID: args.GetUserId(),
+		MuteFlags: args.GetMuteFlags(), IsWhitelist: args.GetIsWhitelist(), MuteUntil: args.GetMuteUntil(),
+	})
+}
+
+// RecordDLPEvent appends one screenshot/record audit row (ADR-0043, op:1519).
+func (s *Server) RecordDLPEvent(ctx context.Context, args *pb.RecordDLPEventArgs) (*pb.OperationReply, error) {
+	err := s.doRecordDLPEvent(ctx, dlpEventArgs{
+		ConvID: args.GetConvId(), ConvType: int16(args.GetConvType()), UID: args.GetUid(),
+		EventType: int16(args.GetEventType()), DeviceInfo: args.GetDeviceInfo(),
+		ActionTaken: int16(args.GetActionTaken()),
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "dlp event failed")
+	}
+	return &pb.OperationReply{Ok: true}, nil
+}
+
+// GetSecurity returns the full security settings of a group (ADR-0043).
+func (s *Server) GetSecurity(ctx context.Context, args *pb.GetSecurityArgs) (*pb.GetSecurityReply, error) {
+	settings, err := s.repo.GetSecurity(ctx, args.GetGroupId())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "security lookup failed")
+	}
+	return &pb.GetSecurityReply{Security: securityState(settings, nil, nil, time.Now().UnixMilli())}, nil
 }

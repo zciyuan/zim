@@ -12,14 +12,69 @@ import (
 )
 
 type fakeRepo struct {
-	mu      sync.Mutex
-	groups  map[int64]*model.Group
-	members map[int64]map[int64]*model.GroupMember
-	applies []*model.GroupApply
+	mu           sync.Mutex
+	groups       map[int64]*model.Group
+	members      map[int64]map[int64]*model.GroupMember
+	applies      []*model.GroupApply
+	security     map[int64]*model.GroupSecuritySettings
+	restrictions map[int64]map[int64]*model.GroupMemberRestriction
+	dlpEvents    []*model.DLPSecurityEvent
 }
 
 func newFakeRepo() *fakeRepo {
-	return &fakeRepo{groups: make(map[int64]*model.Group), members: make(map[int64]map[int64]*model.GroupMember)}
+	return &fakeRepo{
+		groups: make(map[int64]*model.Group), members: make(map[int64]map[int64]*model.GroupMember),
+		security:     make(map[int64]*model.GroupSecuritySettings),
+		restrictions: make(map[int64]map[int64]*model.GroupMemberRestriction),
+	}
+}
+
+func (f *fakeRepo) GetSecurity(_ context.Context, gid int64) (*model.GroupSecuritySettings, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if settings, ok := f.security[gid]; ok {
+		return settings, nil
+	}
+	return &model.GroupSecuritySettings{
+		GroupID: gid, ScheduledMuteStart: "00:00", ScheduledMuteEnd: "08:00",
+		ScheduledTimezone: "Asia/Shanghai", AntiSpamEnable: true,
+		AntiSpamWindowSec: 5, AntiSpamMaxMsgs: 5, SensitiveAutoMuteS: 3600,
+	}, nil
+}
+
+func (f *fakeRepo) UpsertSecurity(_ context.Context, settings *model.GroupSecuritySettings) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.security[settings.GroupID] = settings
+	return nil
+}
+
+func (f *fakeRepo) GetRestriction(_ context.Context, gid, uid int64) (*model.GroupMemberRestriction, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if restrictions := f.restrictions[gid]; restrictions != nil {
+		if restriction, ok := restrictions[uid]; ok {
+			return restriction, nil
+		}
+	}
+	return nil, nil
+}
+
+func (f *fakeRepo) UpsertRestriction(_ context.Context, restriction *model.GroupMemberRestriction) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.restrictions[restriction.GroupID] == nil {
+		f.restrictions[restriction.GroupID] = make(map[int64]*model.GroupMemberRestriction)
+	}
+	f.restrictions[restriction.GroupID][restriction.UID] = restriction
+	return nil
+}
+
+func (f *fakeRepo) InsertDLPEvent(_ context.Context, event *model.DLPSecurityEvent) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.dlpEvents = append(f.dlpEvents, event)
+	return nil
 }
 
 func (f *fakeRepo) Create(_ context.Context, group *model.Group) error {

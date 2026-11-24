@@ -9,6 +9,7 @@ import (
 	"github.com/dobyte/due/v2/cluster/node"
 	"github.com/dobyte/due/v2/etc"
 	"github.com/dobyte/due/v2/log"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/zciyuan/ZIM/internal/component/metrics"
@@ -146,6 +147,24 @@ func (c *core) Init() {
 	c.proxy.Router().AddRouteHandler(contract.OpSearchMsg, c.searchMessage)
 	c.proxy.Router().AddRouteHandler(contract.OpAddReaction, c.addReaction)
 	c.proxy.Router().AddRouteHandler(contract.OpRemoveReaction, c.removeReaction)
+	// ADR-0043: burn after reading, screenshot report, group security.
+	c.proxy.Router().AddRouteHandler(contract.OpBurnReadAck, c.burnReadAck)
+	c.proxy.Router().AddRouteHandler(contract.OpScreenshotReport, c.screenshotReport)
+	c.proxy.Router().AddRouteHandler(contract.OpSetGroupSecurity, c.setGroupSecurity)
+	c.proxy.Router().AddRouteHandler(contract.OpSetMemberRestriction, c.setMemberRestriction)
+	// ADR-0043: voice room lifecycle and seat control (forward to zim-voiceroom).
+	c.proxy.Router().AddRouteHandler(contract.OpVoiceRoomCreate, c.voiceRoomCreate)
+	c.proxy.Router().AddRouteHandler(contract.OpVoiceRoomList, c.voiceRoomList)
+	c.proxy.Router().AddRouteHandler(contract.OpVoiceRoomJoin, c.voiceRoomJoin)
+	c.proxy.Router().AddRouteHandler(contract.OpVoiceRoomRefreshToken, c.voiceRoomRefreshToken)
+	c.proxy.Router().AddRouteHandler(contract.OpTakeSeat, c.takeSeat)
+	c.proxy.Router().AddRouteHandler(contract.OpLeaveSeat, c.leaveSeat)
+	c.proxy.Router().AddRouteHandler(contract.OpKickSeat, c.kickSeat)
+	c.proxy.Router().AddRouteHandler(contract.OpForceMuteSeat, c.forceMuteSeat)
+	c.proxy.Router().AddRouteHandler(contract.OpLockSeat, c.lockSeat)
+	c.proxy.Router().AddRouteHandler(contract.OpHandUp, c.handUp)
+	c.proxy.Router().AddRouteHandler(contract.OpApproveHandUp, c.approveHandUp)
+	c.proxy.Router().AddRouteHandler(contract.OpInviteToSeat, c.inviteToSeat)
 
 	// Connect/reconnect are delivered to every node in the gate's dispatcher.
 	// Register no-op handlers so an anonymous connection does not produce a
@@ -364,6 +383,18 @@ func (c *core) WithRTCClientURL(url string) *core {
 	if url != "" {
 		c.rtcClientURL = url
 	}
+	return c
+}
+
+// WithCache wires the Redis client used by DLP debounce and burn pushes.
+func (c *core) WithCache(client redis.UniversalClient) *core {
+	c.cache = client
+	return c
+}
+
+// WithDLPAudit wires the screenshot/record audit publisher.
+func (c *core) WithDLPAudit(publisher DLPAuditPublisher) *core {
+	c.dlpAudit = publisher
 	return c
 }
 

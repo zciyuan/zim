@@ -47,6 +47,19 @@ func (d *directory) Membership(ctx context.Context, gid, uid int64) (*message.Me
 			if reply.GetGroup() != nil {
 				member.GroupMute = reply.GetGroup().GetMutedUntil()
 			}
+			if security := reply.GetSecurity(); security != nil {
+				member.MuteAll = security.GetMuteAll()
+				member.DefaultMuteFlags = security.GetDefaultMuteFlags()
+				member.ScheduledMuteActive = security.GetScheduledMuteActive()
+				member.IsWhitelist = security.GetIsWhitelist()
+				member.MemberMuteFlags = security.GetMemberMuteFlags()
+				member.MemberMuteUntil = security.GetMemberMuteUntil()
+				member.NewMemberUntil = security.GetNewMemberUntil()
+				member.AntiSpamEnable = security.GetAntiSpamEnable()
+				member.AntiSpamWindowSec = security.GetAntiSpamWindowSec()
+				member.AntiSpamMaxMsgs = security.GetAntiSpamMaxMsgs()
+				member.SensitiveAutoMuteS = security.GetSensitiveAutoMuteS()
+			}
 			cancel()
 			return member, nil
 		}

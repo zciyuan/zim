@@ -31,6 +31,7 @@ import (
 	groupversion "github.com/zciyuan/ZIM/internal/service/groupversion/server"
 	webhook "github.com/zciyuan/ZIM/internal/service/webhook/server"
 	"github.com/zciyuan/ZIM/internal/version"
+	"github.com/zciyuan/ZIM/zimfw/pipe"
 )
 
 // dependencies owns the shared PostgreSQL, Mongo, Redis and domain services.
@@ -121,7 +122,17 @@ func (d *dependencies) appDeps() app.Deps {
 			etc.Get("etc.zim.webhook.url", "").String(),
 			etc.Get("etc.zim.webhook.secret", "").String(),
 		),
+		MemberStatus: newMemberStatusPublisher(),
 	}
+}
+
+// newMemberStatusPublisher wires mute/kick events to
+// zim.pipe.groupMemberStatus (ADR-0043); nil when Kafka is not configured.
+func newMemberStatusPublisher() groupserver.MemberStatusPublisher {
+	if brokers := etc.Get("etc.zim.pipe.brokers", []string{}).Strings(); len(brokers) > 0 {
+		return groupserver.NewKafkaMemberStatusPublisher(pipe.NewKafkaProducer(brokers))
+	}
+	return nil
 }
 
 func newMeshComponent() *mesh.Mesh {

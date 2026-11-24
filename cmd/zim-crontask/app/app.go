@@ -9,6 +9,7 @@ import (
 	"github.com/dobyte/due/v2/log"
 
 	"github.com/zciyuan/ZIM/internal/component/metrics"
+	burnsvc "github.com/zciyuan/ZIM/internal/service/burn/server"
 	callrecord "github.com/zciyuan/ZIM/internal/service/callrecord/server"
 	gateclean "github.com/zciyuan/ZIM/internal/service/gateclean/server"
 	maintenance "github.com/zciyuan/ZIM/internal/service/maintenance/server"
@@ -26,7 +27,16 @@ func New(service *maintenance.Service, locker lock.Locker, interval time.Duratio
 	}
 	return &App{service: service, locker: locker, interval: interval, recorder: recorder,
 		cleaner: cleaner, cleanInterval: cleanInterval, uploadDir: uploadDir,
-		uploadAge: uploadAge, done: make(chan struct{})}
+		uploadAge: uploadAge, burnInterval: 5 * time.Second, done: make(chan struct{})}
+}
+
+// WithBurnSweeper wires the burn-after-reading timer sweep (ADR-0043 §2.4.3).
+func (a *App) WithBurnSweeper(sweeper *burnsvc.Sweeper, interval time.Duration) *App {
+	if interval > 0 {
+		a.burnInterval = interval
+	}
+	a.burnSweeper = sweeper
+	return a
 }
 
 // Name returns the component name.
@@ -43,6 +53,7 @@ func (a *App) Start() {
 		a.runOnce(ctx)
 		go a.runRTCTimeouts(ctx)
 		go a.runUploadCleanup(ctx)
+		go a.runBurnSweep(ctx)
 		maintenanceTicker := time.NewTicker(a.interval)
 		defer maintenanceTicker.Stop()
 		cleanTicker := time.NewTicker(a.cleanInterval)
@@ -134,6 +145,42 @@ func (a *App) runRTCTimeouts(ctx context.Context) {
 					}
 				}
 				log.Infof("rtc timeout sweep: calls = %d", len(calls))
+			}
+		}
+	}
+}
+
+// runBurnSweep erases expired burn messages and queues BurnDelete pushes and
+// media cleanup (ADR-0043 §2.4.3, G-01). The leader lock keeps a single
+// replica sweeping even though zim-crontask is usually one instance.
+func (a *App) runBurnSweep(ctx context.Context) {
+	if a.burnSweeper == nil {
+		return
+	}
+	ticker := time.NewTicker(a.burnInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if a.locker != nil {
+				if err := a.locker.TryAcquire(ctx, a.burnInterval); err != nil {
+					continue
+				}
+			}
+			result, err := a.burnSweeper.Run(ctx, 100)
+			if a.locker != nil {
+				_ = a.locker.Release(ctx)
+			}
+			if err != nil {
+				metrics.Default.Inc("zim_burn_sweep_total", map[string]string{"result": "error"})
+				log.Warnf("burn sweep failed: %v", err)
+				continue
+			}
+			if result.Erased > 0 {
+				log.Infof("burn sweep done: erased = %d, pushed = %d, media_queued = %d",
+					result.Erased, result.Pushed, result.MediaQueued)
 			}
 		}
 	}

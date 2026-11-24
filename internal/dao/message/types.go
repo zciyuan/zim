@@ -10,6 +10,7 @@ import (
 type DAO struct {
 	blocks    *mongo.Collection
 	idem      *mongo.Collection
+	burn      *mongo.Collection
 	batchers  []*appendBatcher
 	batchOnce sync.Once
 }
@@ -47,6 +48,14 @@ type messageDoc struct {
 	Seq          int64    `bson:"seq"`
 	SendTime     int64    `bson:"send_time"`
 	Status       int32    `bson:"status"`
+	// ADR-0043: burn metadata. Content stays empty for burned messages.
+	BurnTTL        int32  `bson:"burn_ttl,omitempty"`
+	BurnExpireAt   int64  `bson:"burn_expire_at,omitempty"`
+	MaxRetentionAt int64  `bson:"max_retention_at,omitempty"`
+	IsBurned       bool   `bson:"is_burned,omitempty"`
+	SecurityFlags  uint32 `bson:"security_flags,omitempty"`
+	ExtType        int32  `bson:"ext_type,omitempty"`
+	ExtPayload     string `bson:"ext_payload,omitempty"`
 }
 
 type idemDoc struct {

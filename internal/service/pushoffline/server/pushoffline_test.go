@@ -83,6 +83,29 @@ func TestDispatcherSendsToActiveDevices(t *testing.T) {
 	}
 }
 
+func TestDispatcherMasksBurnBody(t *testing.T) {
+	devices := &fakeDevices{targets: []*model.Device{
+		{OwnerID: 10001, Platform: 1, Status: 0, PushToken: "apns-1", PushProvider: "apns"},
+	}}
+	provider := &fakeProvider{}
+	dispatcher := NewDispatcher(devices, provider, nil)
+	event := newEvent()
+	event.BurnTTL = 10
+	event.Content = `{"text":"secret payload"}`
+	if err := dispatcher.Handle(context.Background(), event); err != nil {
+		t.Fatal(err)
+	}
+	if len(provider.sent) != 1 {
+		t.Fatalf("sent = %d, want 1", len(provider.sent))
+	}
+	if provider.sent[0].Body != "你收到一条私密消息" {
+		t.Fatalf("burn push body leaked content: %q", provider.sent[0].Body)
+	}
+	if provider.sent[0].Extra["server_msg_id"] != "s1" {
+		t.Fatalf("extra = %v", provider.sent[0].Extra)
+	}
+}
+
 func TestDispatcherRateLimited(t *testing.T) {
 	provider := &fakeProvider{}
 	dispatcher := NewDispatcher(&fakeDevices{targets: []*model.Device{

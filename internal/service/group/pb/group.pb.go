@@ -1633,17 +1633,257 @@ func (x *GetMembershipArgs) GetUserId() int64 {
 	return 0
 }
 
+// SecurityState carries the mute/security facts the message path needs
+// (ADR-0043). It is returned as part of GetMembershipReply.
+type SecurityState struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	MuteAll             bool                   `protobuf:"varint,1,opt,name=mute_all,json=muteAll,proto3" json:"mute_all,omitempty"`
+	DefaultMuteFlags    int32                  `protobuf:"varint,2,opt,name=default_mute_flags,json=defaultMuteFlags,proto3" json:"default_mute_flags,omitempty"`
+	ScheduledMuteActive bool                   `protobuf:"varint,3,opt,name=scheduled_mute_active,json=scheduledMuteActive,proto3" json:"scheduled_mute_active,omitempty"`
+	IsWhitelist         bool                   `protobuf:"varint,4,opt,name=is_whitelist,json=isWhitelist,proto3" json:"is_whitelist,omitempty"`
+	MemberMuteFlags     int32                  `protobuf:"varint,5,opt,name=member_mute_flags,json=memberMuteFlags,proto3" json:"member_mute_flags,omitempty"`
+	MemberMuteUntil     int64                  `protobuf:"varint,6,opt,name=member_mute_until,json=memberMuteUntil,proto3" json:"member_mute_until,omitempty"` // ms; 0 = not muted, -1 = permanent
+	NewMemberUntil      int64                  `protobuf:"varint,7,opt,name=new_member_until,json=newMemberUntil,proto3" json:"new_member_until,omitempty"`    // ms; 0 = protection over
+	AntiScreenshot      bool                   `protobuf:"varint,8,opt,name=anti_screenshot,json=antiScreenshot,proto3" json:"anti_screenshot,omitempty"`
+	WatermarkEnable     bool                   `protobuf:"varint,9,opt,name=watermark_enable,json=watermarkEnable,proto3" json:"watermark_enable,omitempty"`
+	ScreenshotPenalty   int32                  `protobuf:"varint,10,opt,name=screenshot_penalty,json=screenshotPenalty,proto3" json:"screenshot_penalty,omitempty"` // 0 WARN / 1 MUTE_24H / 2 KICK
+	AntiSpamEnable      bool                   `protobuf:"varint,11,opt,name=anti_spam_enable,json=antiSpamEnable,proto3" json:"anti_spam_enable,omitempty"`
+	AntiSpamWindowSec   int32                  `protobuf:"varint,12,opt,name=anti_spam_window_sec,json=antiSpamWindowSec,proto3" json:"anti_spam_window_sec,omitempty"`
+	AntiSpamMaxMsgs     int32                  `protobuf:"varint,13,opt,name=anti_spam_max_msgs,json=antiSpamMaxMsgs,proto3" json:"anti_spam_max_msgs,omitempty"`
+	SensitiveAutoMuteS  int32                  `protobuf:"varint,14,opt,name=sensitive_auto_mute_s,json=sensitiveAutoMuteS,proto3" json:"sensitive_auto_mute_s,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SecurityState) Reset() {
+	*x = SecurityState{}
+	mi := &file_group_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SecurityState) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecurityState) ProtoMessage() {}
+
+func (x *SecurityState) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecurityState.ProtoReflect.Descriptor instead.
+func (*SecurityState) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *SecurityState) GetMuteAll() bool {
+	if x != nil {
+		return x.MuteAll
+	}
+	return false
+}
+
+func (x *SecurityState) GetDefaultMuteFlags() int32 {
+	if x != nil {
+		return x.DefaultMuteFlags
+	}
+	return 0
+}
+
+func (x *SecurityState) GetScheduledMuteActive() bool {
+	if x != nil {
+		return x.ScheduledMuteActive
+	}
+	return false
+}
+
+func (x *SecurityState) GetIsWhitelist() bool {
+	if x != nil {
+		return x.IsWhitelist
+	}
+	return false
+}
+
+func (x *SecurityState) GetMemberMuteFlags() int32 {
+	if x != nil {
+		return x.MemberMuteFlags
+	}
+	return 0
+}
+
+func (x *SecurityState) GetMemberMuteUntil() int64 {
+	if x != nil {
+		return x.MemberMuteUntil
+	}
+	return 0
+}
+
+func (x *SecurityState) GetNewMemberUntil() int64 {
+	if x != nil {
+		return x.NewMemberUntil
+	}
+	return 0
+}
+
+func (x *SecurityState) GetAntiScreenshot() bool {
+	if x != nil {
+		return x.AntiScreenshot
+	}
+	return false
+}
+
+func (x *SecurityState) GetWatermarkEnable() bool {
+	if x != nil {
+		return x.WatermarkEnable
+	}
+	return false
+}
+
+func (x *SecurityState) GetScreenshotPenalty() int32 {
+	if x != nil {
+		return x.ScreenshotPenalty
+	}
+	return 0
+}
+
+func (x *SecurityState) GetAntiSpamEnable() bool {
+	if x != nil {
+		return x.AntiSpamEnable
+	}
+	return false
+}
+
+func (x *SecurityState) GetAntiSpamWindowSec() int32 {
+	if x != nil {
+		return x.AntiSpamWindowSec
+	}
+	return 0
+}
+
+func (x *SecurityState) GetAntiSpamMaxMsgs() int32 {
+	if x != nil {
+		return x.AntiSpamMaxMsgs
+	}
+	return 0
+}
+
+func (x *SecurityState) GetSensitiveAutoMuteS() int32 {
+	if x != nil {
+		return x.SensitiveAutoMuteS
+	}
+	return 0
+}
+
+// GetSecurityArgs fetches the full security settings of a group (ADR-0043).
+type GetSecurityArgs struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GroupId       int64                  `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSecurityArgs) Reset() {
+	*x = GetSecurityArgs{}
+	mi := &file_group_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSecurityArgs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSecurityArgs) ProtoMessage() {}
+
+func (x *GetSecurityArgs) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSecurityArgs.ProtoReflect.Descriptor instead.
+func (*GetSecurityArgs) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *GetSecurityArgs) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+type GetSecurityReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Security      *SecurityState         `protobuf:"bytes,1,opt,name=security,proto3" json:"security,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSecurityReply) Reset() {
+	*x = GetSecurityReply{}
+	mi := &file_group_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSecurityReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSecurityReply) ProtoMessage() {}
+
+func (x *GetSecurityReply) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSecurityReply.ProtoReflect.Descriptor instead.
+func (*GetSecurityReply) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *GetSecurityReply) GetSecurity() *SecurityState {
+	if x != nil {
+		return x.Security
+	}
+	return nil
+}
+
 type GetMembershipReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Group         *GroupInfo             `protobuf:"bytes,1,opt,name=group,proto3" json:"group,omitempty"`
 	Member        *Membership            `protobuf:"bytes,2,opt,name=member,proto3" json:"member,omitempty"`
+	Security      *SecurityState         `protobuf:"bytes,3,opt,name=security,proto3" json:"security,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetMembershipReply) Reset() {
 	*x = GetMembershipReply{}
-	mi := &file_group_proto_msgTypes[25]
+	mi := &file_group_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1655,7 +1895,7 @@ func (x *GetMembershipReply) String() string {
 func (*GetMembershipReply) ProtoMessage() {}
 
 func (x *GetMembershipReply) ProtoReflect() protoreflect.Message {
-	mi := &file_group_proto_msgTypes[25]
+	mi := &file_group_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1668,7 +1908,7 @@ func (x *GetMembershipReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMembershipReply.ProtoReflect.Descriptor instead.
 func (*GetMembershipReply) Descriptor() ([]byte, []int) {
-	return file_group_proto_rawDescGZIP(), []int{25}
+	return file_group_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GetMembershipReply) GetGroup() *GroupInfo {
@@ -1685,6 +1925,13 @@ func (x *GetMembershipReply) GetMember() *Membership {
 	return nil
 }
 
+func (x *GetMembershipReply) GetSecurity() *SecurityState {
+	if x != nil {
+		return x.Security
+	}
+	return nil
+}
+
 type MemberIDsArgs struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GroupId       int64                  `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
@@ -1694,7 +1941,7 @@ type MemberIDsArgs struct {
 
 func (x *MemberIDsArgs) Reset() {
 	*x = MemberIDsArgs{}
-	mi := &file_group_proto_msgTypes[26]
+	mi := &file_group_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1706,7 +1953,7 @@ func (x *MemberIDsArgs) String() string {
 func (*MemberIDsArgs) ProtoMessage() {}
 
 func (x *MemberIDsArgs) ProtoReflect() protoreflect.Message {
-	mi := &file_group_proto_msgTypes[26]
+	mi := &file_group_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1719,7 +1966,7 @@ func (x *MemberIDsArgs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MemberIDsArgs.ProtoReflect.Descriptor instead.
 func (*MemberIDsArgs) Descriptor() ([]byte, []int) {
-	return file_group_proto_rawDescGZIP(), []int{26}
+	return file_group_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *MemberIDsArgs) GetGroupId() int64 {
@@ -1738,7 +1985,7 @@ type MemberIDsReply struct {
 
 func (x *MemberIDsReply) Reset() {
 	*x = MemberIDsReply{}
-	mi := &file_group_proto_msgTypes[27]
+	mi := &file_group_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1750,7 +1997,7 @@ func (x *MemberIDsReply) String() string {
 func (*MemberIDsReply) ProtoMessage() {}
 
 func (x *MemberIDsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_group_proto_msgTypes[27]
+	mi := &file_group_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1763,7 +2010,7 @@ func (x *MemberIDsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MemberIDsReply.ProtoReflect.Descriptor instead.
 func (*MemberIDsReply) Descriptor() ([]byte, []int) {
-	return file_group_proto_rawDescGZIP(), []int{27}
+	return file_group_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *MemberIDsReply) GetUserIds() []int64 {
@@ -1771,6 +2018,388 @@ func (x *MemberIDsReply) GetUserIds() []int64 {
 		return x.UserIds
 	}
 	return nil
+}
+
+// SetGroupSecurityArgs configures scheduled mute / mute-all / DLP (ADR-0043,
+// op:1318). Zero-value fields keep the current setting; a dedicated clear flag
+// pattern is avoided by using the same values as the DDL defaults.
+type SetGroupSecurityArgs struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	GroupId             int64                  `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	OperatorId          int64                  `protobuf:"varint,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	MuteAll             bool                   `protobuf:"varint,3,opt,name=mute_all,json=muteAll,proto3" json:"mute_all,omitempty"`
+	ScheduledMuteEnable bool                   `protobuf:"varint,4,opt,name=scheduled_mute_enable,json=scheduledMuteEnable,proto3" json:"scheduled_mute_enable,omitempty"`
+	ScheduledMuteStart  string                 `protobuf:"bytes,5,opt,name=scheduled_mute_start,json=scheduledMuteStart,proto3" json:"scheduled_mute_start,omitempty"` // HH:MM
+	ScheduledMuteEnd    string                 `protobuf:"bytes,6,opt,name=scheduled_mute_end,json=scheduledMuteEnd,proto3" json:"scheduled_mute_end,omitempty"`       // HH:MM
+	ScheduledTimezone   string                 `protobuf:"bytes,7,opt,name=scheduled_timezone,json=scheduledTimezone,proto3" json:"scheduled_timezone,omitempty"`      // IANA
+	DefaultMuteFlags    int32                  `protobuf:"varint,8,opt,name=default_mute_flags,json=defaultMuteFlags,proto3" json:"default_mute_flags,omitempty"`
+	NewMemberMuteSec    int32                  `protobuf:"varint,9,opt,name=new_member_mute_sec,json=newMemberMuteSec,proto3" json:"new_member_mute_sec,omitempty"`
+	AntiSpamEnable      bool                   `protobuf:"varint,10,opt,name=anti_spam_enable,json=antiSpamEnable,proto3" json:"anti_spam_enable,omitempty"`
+	AntiSpamWindowSec   int32                  `protobuf:"varint,11,opt,name=anti_spam_window_sec,json=antiSpamWindowSec,proto3" json:"anti_spam_window_sec,omitempty"`
+	AntiSpamMaxMsgs     int32                  `protobuf:"varint,12,opt,name=anti_spam_max_msgs,json=antiSpamMaxMsgs,proto3" json:"anti_spam_max_msgs,omitempty"`
+	SensitiveAutoMuteS  int32                  `protobuf:"varint,13,opt,name=sensitive_auto_mute_s,json=sensitiveAutoMuteS,proto3" json:"sensitive_auto_mute_s,omitempty"`
+	AntiScreenshot      bool                   `protobuf:"varint,14,opt,name=anti_screenshot,json=antiScreenshot,proto3" json:"anti_screenshot,omitempty"`
+	WatermarkEnable     bool                   `protobuf:"varint,15,opt,name=watermark_enable,json=watermarkEnable,proto3" json:"watermark_enable,omitempty"`
+	ScreenshotPenalty   int32                  `protobuf:"varint,16,opt,name=screenshot_penalty,json=screenshotPenalty,proto3" json:"screenshot_penalty,omitempty"` // 0 WARN / 1 MUTE_24H / 2 KICK
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SetGroupSecurityArgs) Reset() {
+	*x = SetGroupSecurityArgs{}
+	mi := &file_group_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetGroupSecurityArgs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetGroupSecurityArgs) ProtoMessage() {}
+
+func (x *SetGroupSecurityArgs) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetGroupSecurityArgs.ProtoReflect.Descriptor instead.
+func (*SetGroupSecurityArgs) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *SetGroupSecurityArgs) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetMuteAll() bool {
+	if x != nil {
+		return x.MuteAll
+	}
+	return false
+}
+
+func (x *SetGroupSecurityArgs) GetScheduledMuteEnable() bool {
+	if x != nil {
+		return x.ScheduledMuteEnable
+	}
+	return false
+}
+
+func (x *SetGroupSecurityArgs) GetScheduledMuteStart() string {
+	if x != nil {
+		return x.ScheduledMuteStart
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityArgs) GetScheduledMuteEnd() string {
+	if x != nil {
+		return x.ScheduledMuteEnd
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityArgs) GetScheduledTimezone() string {
+	if x != nil {
+		return x.ScheduledTimezone
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityArgs) GetDefaultMuteFlags() int32 {
+	if x != nil {
+		return x.DefaultMuteFlags
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetNewMemberMuteSec() int32 {
+	if x != nil {
+		return x.NewMemberMuteSec
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetAntiSpamEnable() bool {
+	if x != nil {
+		return x.AntiSpamEnable
+	}
+	return false
+}
+
+func (x *SetGroupSecurityArgs) GetAntiSpamWindowSec() int32 {
+	if x != nil {
+		return x.AntiSpamWindowSec
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetAntiSpamMaxMsgs() int32 {
+	if x != nil {
+		return x.AntiSpamMaxMsgs
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetSensitiveAutoMuteS() int32 {
+	if x != nil {
+		return x.SensitiveAutoMuteS
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityArgs) GetAntiScreenshot() bool {
+	if x != nil {
+		return x.AntiScreenshot
+	}
+	return false
+}
+
+func (x *SetGroupSecurityArgs) GetWatermarkEnable() bool {
+	if x != nil {
+		return x.WatermarkEnable
+	}
+	return false
+}
+
+func (x *SetGroupSecurityArgs) GetScreenshotPenalty() int32 {
+	if x != nil {
+		return x.ScreenshotPenalty
+	}
+	return 0
+}
+
+type SecuritySettingsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Security      *SecurityState         `protobuf:"bytes,1,opt,name=security,proto3" json:"security,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SecuritySettingsReply) Reset() {
+	*x = SecuritySettingsReply{}
+	mi := &file_group_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SecuritySettingsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecuritySettingsReply) ProtoMessage() {}
+
+func (x *SecuritySettingsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecuritySettingsReply.ProtoReflect.Descriptor instead.
+func (*SecuritySettingsReply) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *SecuritySettingsReply) GetSecurity() *SecurityState {
+	if x != nil {
+		return x.Security
+	}
+	return nil
+}
+
+// SetMemberRestrictionArgs sets category mute flags or whitelist for one
+// member (ADR-0043, op:1319).
+type SetMemberRestrictionArgs struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GroupId       int64                  `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	MuteFlags     int32                  `protobuf:"varint,4,opt,name=mute_flags,json=muteFlags,proto3" json:"mute_flags,omitempty"`
+	IsWhitelist   bool                   `protobuf:"varint,5,opt,name=is_whitelist,json=isWhitelist,proto3" json:"is_whitelist,omitempty"`
+	MuteUntil     int64                  `protobuf:"varint,6,opt,name=mute_until,json=muteUntil,proto3" json:"mute_until,omitempty"` // ms; 0 = clear, -1 = permanent
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetMemberRestrictionArgs) Reset() {
+	*x = SetMemberRestrictionArgs{}
+	mi := &file_group_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetMemberRestrictionArgs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMemberRestrictionArgs) ProtoMessage() {}
+
+func (x *SetMemberRestrictionArgs) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMemberRestrictionArgs.ProtoReflect.Descriptor instead.
+func (*SetMemberRestrictionArgs) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *SetMemberRestrictionArgs) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *SetMemberRestrictionArgs) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+func (x *SetMemberRestrictionArgs) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *SetMemberRestrictionArgs) GetMuteFlags() int32 {
+	if x != nil {
+		return x.MuteFlags
+	}
+	return 0
+}
+
+func (x *SetMemberRestrictionArgs) GetIsWhitelist() bool {
+	if x != nil {
+		return x.IsWhitelist
+	}
+	return false
+}
+
+func (x *SetMemberRestrictionArgs) GetMuteUntil() int64 {
+	if x != nil {
+		return x.MuteUntil
+	}
+	return 0
+}
+
+// RecordDLPEventArgs appends a screenshot/record audit row (ADR-0043).
+type RecordDLPEventArgs struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ConvId        string                 `protobuf:"bytes,1,opt,name=conv_id,json=convId,proto3" json:"conv_id,omitempty"`
+	ConvType      int32                  `protobuf:"varint,2,opt,name=conv_type,json=convType,proto3" json:"conv_type,omitempty"` // 1 single / 2 group
+	Uid           int64                  `protobuf:"varint,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	EventType     int32                  `protobuf:"varint,4,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"` // 1 screenshot / 2 screen record start
+	DeviceInfo    string                 `protobuf:"bytes,5,opt,name=device_info,json=deviceInfo,proto3" json:"device_info,omitempty"`
+	ActionTaken   int32                  `protobuf:"varint,6,opt,name=action_taken,json=actionTaken,proto3" json:"action_taken,omitempty"` // 0 none / 1 warn / 2 mute_24h / 3 kick
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordDLPEventArgs) Reset() {
+	*x = RecordDLPEventArgs{}
+	mi := &file_group_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordDLPEventArgs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordDLPEventArgs) ProtoMessage() {}
+
+func (x *RecordDLPEventArgs) ProtoReflect() protoreflect.Message {
+	mi := &file_group_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordDLPEventArgs.ProtoReflect.Descriptor instead.
+func (*RecordDLPEventArgs) Descriptor() ([]byte, []int) {
+	return file_group_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *RecordDLPEventArgs) GetConvId() string {
+	if x != nil {
+		return x.ConvId
+	}
+	return ""
+}
+
+func (x *RecordDLPEventArgs) GetConvType() int32 {
+	if x != nil {
+		return x.ConvType
+	}
+	return 0
+}
+
+func (x *RecordDLPEventArgs) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *RecordDLPEventArgs) GetEventType() int32 {
+	if x != nil {
+		return x.EventType
+	}
+	return 0
+}
+
+func (x *RecordDLPEventArgs) GetDeviceInfo() string {
+	if x != nil {
+		return x.DeviceInfo
+	}
+	return ""
+}
+
+func (x *RecordDLPEventArgs) GetActionTaken() int32 {
+	if x != nil {
+		return x.ActionTaken
+	}
+	return 0
 }
 
 type OperationReply struct {
@@ -1782,7 +2411,7 @@ type OperationReply struct {
 
 func (x *OperationReply) Reset() {
 	*x = OperationReply{}
-	mi := &file_group_proto_msgTypes[28]
+	mi := &file_group_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1794,7 +2423,7 @@ func (x *OperationReply) String() string {
 func (*OperationReply) ProtoMessage() {}
 
 func (x *OperationReply) ProtoReflect() protoreflect.Message {
-	mi := &file_group_proto_msgTypes[28]
+	mi := &file_group_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1807,7 +2436,7 @@ func (x *OperationReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OperationReply.ProtoReflect.Descriptor instead.
 func (*OperationReply) Descriptor() ([]byte, []int) {
-	return file_group_proto_rawDescGZIP(), []int{28}
+	return file_group_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *OperationReply) GetOk() bool {
@@ -1957,16 +2586,77 @@ const file_group_proto_rawDesc = "" +
 	"\x05until\x18\x03 \x01(\x03R\x05until\"G\n" +
 	"\x11GetMembershipArgs\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\x03R\agroupId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\"\x7f\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\"\xef\x04\n" +
+	"\rSecurityState\x12\x19\n" +
+	"\bmute_all\x18\x01 \x01(\bR\amuteAll\x12,\n" +
+	"\x12default_mute_flags\x18\x02 \x01(\x05R\x10defaultMuteFlags\x122\n" +
+	"\x15scheduled_mute_active\x18\x03 \x01(\bR\x13scheduledMuteActive\x12!\n" +
+	"\fis_whitelist\x18\x04 \x01(\bR\visWhitelist\x12*\n" +
+	"\x11member_mute_flags\x18\x05 \x01(\x05R\x0fmemberMuteFlags\x12*\n" +
+	"\x11member_mute_until\x18\x06 \x01(\x03R\x0fmemberMuteUntil\x12(\n" +
+	"\x10new_member_until\x18\a \x01(\x03R\x0enewMemberUntil\x12'\n" +
+	"\x0fanti_screenshot\x18\b \x01(\bR\x0eantiScreenshot\x12)\n" +
+	"\x10watermark_enable\x18\t \x01(\bR\x0fwatermarkEnable\x12-\n" +
+	"\x12screenshot_penalty\x18\n" +
+	" \x01(\x05R\x11screenshotPenalty\x12(\n" +
+	"\x10anti_spam_enable\x18\v \x01(\bR\x0eantiSpamEnable\x12/\n" +
+	"\x14anti_spam_window_sec\x18\f \x01(\x05R\x11antiSpamWindowSec\x12+\n" +
+	"\x12anti_spam_max_msgs\x18\r \x01(\x05R\x0fantiSpamMaxMsgs\x121\n" +
+	"\x15sensitive_auto_mute_s\x18\x0e \x01(\x05R\x12sensitiveAutoMuteS\",\n" +
+	"\x0fGetSecurityArgs\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\x03R\agroupId\"P\n" +
+	"\x10GetSecurityReply\x12<\n" +
+	"\bsecurity\x18\x01 \x01(\v2 .zim.service.group.SecurityStateR\bsecurity\"\xbd\x01\n" +
 	"\x12GetMembershipReply\x122\n" +
 	"\x05group\x18\x01 \x01(\v2\x1c.zim.service.group.GroupInfoR\x05group\x125\n" +
-	"\x06member\x18\x02 \x01(\v2\x1d.zim.service.group.MembershipR\x06member\"*\n" +
+	"\x06member\x18\x02 \x01(\v2\x1d.zim.service.group.MembershipR\x06member\x12<\n" +
+	"\bsecurity\x18\x03 \x01(\v2 .zim.service.group.SecurityStateR\bsecurity\"*\n" +
 	"\rMemberIDsArgs\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\x03R\agroupId\"+\n" +
 	"\x0eMemberIDsReply\x12\x19\n" +
-	"\buser_ids\x18\x01 \x03(\x03R\auserIds\" \n" +
+	"\buser_ids\x18\x01 \x03(\x03R\auserIds\"\xcb\x05\n" +
+	"\x14SetGroupSecurityArgs\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\x03R\agroupId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\x03R\n" +
+	"operatorId\x12\x19\n" +
+	"\bmute_all\x18\x03 \x01(\bR\amuteAll\x122\n" +
+	"\x15scheduled_mute_enable\x18\x04 \x01(\bR\x13scheduledMuteEnable\x120\n" +
+	"\x14scheduled_mute_start\x18\x05 \x01(\tR\x12scheduledMuteStart\x12,\n" +
+	"\x12scheduled_mute_end\x18\x06 \x01(\tR\x10scheduledMuteEnd\x12-\n" +
+	"\x12scheduled_timezone\x18\a \x01(\tR\x11scheduledTimezone\x12,\n" +
+	"\x12default_mute_flags\x18\b \x01(\x05R\x10defaultMuteFlags\x12-\n" +
+	"\x13new_member_mute_sec\x18\t \x01(\x05R\x10newMemberMuteSec\x12(\n" +
+	"\x10anti_spam_enable\x18\n" +
+	" \x01(\bR\x0eantiSpamEnable\x12/\n" +
+	"\x14anti_spam_window_sec\x18\v \x01(\x05R\x11antiSpamWindowSec\x12+\n" +
+	"\x12anti_spam_max_msgs\x18\f \x01(\x05R\x0fantiSpamMaxMsgs\x121\n" +
+	"\x15sensitive_auto_mute_s\x18\r \x01(\x05R\x12sensitiveAutoMuteS\x12'\n" +
+	"\x0fanti_screenshot\x18\x0e \x01(\bR\x0eantiScreenshot\x12)\n" +
+	"\x10watermark_enable\x18\x0f \x01(\bR\x0fwatermarkEnable\x12-\n" +
+	"\x12screenshot_penalty\x18\x10 \x01(\x05R\x11screenshotPenalty\"U\n" +
+	"\x15SecuritySettingsReply\x12<\n" +
+	"\bsecurity\x18\x01 \x01(\v2 .zim.service.group.SecurityStateR\bsecurity\"\xd0\x01\n" +
+	"\x18SetMemberRestrictionArgs\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\x03R\agroupId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\x03R\n" +
+	"operatorId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\x03R\x06userId\x12\x1d\n" +
+	"\n" +
+	"mute_flags\x18\x04 \x01(\x05R\tmuteFlags\x12!\n" +
+	"\fis_whitelist\x18\x05 \x01(\bR\visWhitelist\x12\x1d\n" +
+	"\n" +
+	"mute_until\x18\x06 \x01(\x03R\tmuteUntil\"\xbf\x01\n" +
+	"\x12RecordDLPEventArgs\x12\x17\n" +
+	"\aconv_id\x18\x01 \x01(\tR\x06convId\x12\x1b\n" +
+	"\tconv_type\x18\x02 \x01(\x05R\bconvType\x12\x10\n" +
+	"\x03uid\x18\x03 \x01(\x03R\x03uid\x12\x1d\n" +
+	"\n" +
+	"event_type\x18\x04 \x01(\x05R\teventType\x12\x1f\n" +
+	"\vdevice_info\x18\x05 \x01(\tR\n" +
+	"deviceInfo\x12!\n" +
+	"\faction_taken\x18\x06 \x01(\x05R\vactionTaken\" \n" +
 	"\x0eOperationReply\x12\x0e\n" +
-	"\x02ok\x18\x01 \x01(\bR\x02ok2\xc0\f\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok2\xc3\x0f\n" +
 	"\x05Group\x12O\n" +
 	"\vCreateGroup\x12\".zim.service.group.CreateGroupArgs\x1a\x1c.zim.service.group.GroupInfo\x12I\n" +
 	"\bGetGroup\x12\x1f.zim.service.group.GetGroupArgs\x1a\x1c.zim.service.group.GroupInfo\x12O\n" +
@@ -1988,7 +2678,11 @@ const file_group_proto_rawDesc = "" +
 	"MuteMember\x12!.zim.service.group.MuteMemberArgs\x1a!.zim.service.group.OperationReply\x12L\n" +
 	"\aMuteAll\x12\x1e.zim.service.group.MuteAllArgs\x1a!.zim.service.group.OperationReply\x12\\\n" +
 	"\rGetMembership\x12$.zim.service.group.GetMembershipArgs\x1a%.zim.service.group.GetMembershipReply\x12P\n" +
-	"\tMemberIDs\x12 .zim.service.group.MemberIDsArgs\x1a!.zim.service.group.MemberIDsReplyB:Z8github.com/zciyuan/ZIM/internal/service/group/pb;grouppbb\x06proto3"
+	"\tMemberIDs\x12 .zim.service.group.MemberIDsArgs\x1a!.zim.service.group.MemberIDsReply\x12e\n" +
+	"\x10SetGroupSecurity\x12'.zim.service.group.SetGroupSecurityArgs\x1a(.zim.service.group.SecuritySettingsReply\x12f\n" +
+	"\x14SetMemberRestriction\x12+.zim.service.group.SetMemberRestrictionArgs\x1a!.zim.service.group.OperationReply\x12Z\n" +
+	"\x0eRecordDLPEvent\x12%.zim.service.group.RecordDLPEventArgs\x1a!.zim.service.group.OperationReply\x12V\n" +
+	"\vGetSecurity\x12\".zim.service.group.GetSecurityArgs\x1a#.zim.service.group.GetSecurityReplyB:Z8github.com/zciyuan/ZIM/internal/service/group/pb;grouppbb\x06proto3"
 
 var (
 	file_group_proto_rawDescOnce sync.Once
@@ -2002,88 +2696,106 @@ func file_group_proto_rawDescGZIP() []byte {
 	return file_group_proto_rawDescData
 }
 
-var file_group_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_group_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_group_proto_goTypes = []any{
-	(*GroupInfo)(nil),          // 0: zim.service.group.GroupInfo
-	(*Membership)(nil),         // 1: zim.service.group.Membership
-	(*CreateGroupArgs)(nil),    // 2: zim.service.group.CreateGroupArgs
-	(*GetGroupArgs)(nil),       // 3: zim.service.group.GetGroupArgs
-	(*UpdateGroupArgs)(nil),    // 4: zim.service.group.UpdateGroupArgs
-	(*GroupApplyItem)(nil),     // 5: zim.service.group.GroupApplyItem
-	(*ListAppliesArgs)(nil),    // 6: zim.service.group.ListAppliesArgs
-	(*ListAppliesReply)(nil),   // 7: zim.service.group.ListAppliesReply
-	(*SearchGroupsArgs)(nil),   // 8: zim.service.group.SearchGroupsArgs
-	(*SearchGroupsReply)(nil),  // 9: zim.service.group.SearchGroupsReply
-	(*ApplyJoinArgs)(nil),      // 10: zim.service.group.ApplyJoinArgs
-	(*AnswerJoinArgs)(nil),     // 11: zim.service.group.AnswerJoinArgs
-	(*TransferGroupArgs)(nil),  // 12: zim.service.group.TransferGroupArgs
-	(*DismissGroupArgs)(nil),   // 13: zim.service.group.DismissGroupArgs
-	(*QuitGroupArgs)(nil),      // 14: zim.service.group.QuitGroupArgs
-	(*InviteMembersArgs)(nil),  // 15: zim.service.group.InviteMembersArgs
-	(*RemoveMemberArgs)(nil),   // 16: zim.service.group.RemoveMemberArgs
-	(*MembersArgs)(nil),        // 17: zim.service.group.MembersArgs
-	(*MembersReply)(nil),       // 18: zim.service.group.MembersReply
-	(*MyGroupsArgs)(nil),       // 19: zim.service.group.MyGroupsArgs
-	(*MyGroupsReply)(nil),      // 20: zim.service.group.MyGroupsReply
-	(*SetAdminArgs)(nil),       // 21: zim.service.group.SetAdminArgs
-	(*MuteMemberArgs)(nil),     // 22: zim.service.group.MuteMemberArgs
-	(*MuteAllArgs)(nil),        // 23: zim.service.group.MuteAllArgs
-	(*GetMembershipArgs)(nil),  // 24: zim.service.group.GetMembershipArgs
-	(*GetMembershipReply)(nil), // 25: zim.service.group.GetMembershipReply
-	(*MemberIDsArgs)(nil),      // 26: zim.service.group.MemberIDsArgs
-	(*MemberIDsReply)(nil),     // 27: zim.service.group.MemberIDsReply
-	(*OperationReply)(nil),     // 28: zim.service.group.OperationReply
+	(*GroupInfo)(nil),                // 0: zim.service.group.GroupInfo
+	(*Membership)(nil),               // 1: zim.service.group.Membership
+	(*CreateGroupArgs)(nil),          // 2: zim.service.group.CreateGroupArgs
+	(*GetGroupArgs)(nil),             // 3: zim.service.group.GetGroupArgs
+	(*UpdateGroupArgs)(nil),          // 4: zim.service.group.UpdateGroupArgs
+	(*GroupApplyItem)(nil),           // 5: zim.service.group.GroupApplyItem
+	(*ListAppliesArgs)(nil),          // 6: zim.service.group.ListAppliesArgs
+	(*ListAppliesReply)(nil),         // 7: zim.service.group.ListAppliesReply
+	(*SearchGroupsArgs)(nil),         // 8: zim.service.group.SearchGroupsArgs
+	(*SearchGroupsReply)(nil),        // 9: zim.service.group.SearchGroupsReply
+	(*ApplyJoinArgs)(nil),            // 10: zim.service.group.ApplyJoinArgs
+	(*AnswerJoinArgs)(nil),           // 11: zim.service.group.AnswerJoinArgs
+	(*TransferGroupArgs)(nil),        // 12: zim.service.group.TransferGroupArgs
+	(*DismissGroupArgs)(nil),         // 13: zim.service.group.DismissGroupArgs
+	(*QuitGroupArgs)(nil),            // 14: zim.service.group.QuitGroupArgs
+	(*InviteMembersArgs)(nil),        // 15: zim.service.group.InviteMembersArgs
+	(*RemoveMemberArgs)(nil),         // 16: zim.service.group.RemoveMemberArgs
+	(*MembersArgs)(nil),              // 17: zim.service.group.MembersArgs
+	(*MembersReply)(nil),             // 18: zim.service.group.MembersReply
+	(*MyGroupsArgs)(nil),             // 19: zim.service.group.MyGroupsArgs
+	(*MyGroupsReply)(nil),            // 20: zim.service.group.MyGroupsReply
+	(*SetAdminArgs)(nil),             // 21: zim.service.group.SetAdminArgs
+	(*MuteMemberArgs)(nil),           // 22: zim.service.group.MuteMemberArgs
+	(*MuteAllArgs)(nil),              // 23: zim.service.group.MuteAllArgs
+	(*GetMembershipArgs)(nil),        // 24: zim.service.group.GetMembershipArgs
+	(*SecurityState)(nil),            // 25: zim.service.group.SecurityState
+	(*GetSecurityArgs)(nil),          // 26: zim.service.group.GetSecurityArgs
+	(*GetSecurityReply)(nil),         // 27: zim.service.group.GetSecurityReply
+	(*GetMembershipReply)(nil),       // 28: zim.service.group.GetMembershipReply
+	(*MemberIDsArgs)(nil),            // 29: zim.service.group.MemberIDsArgs
+	(*MemberIDsReply)(nil),           // 30: zim.service.group.MemberIDsReply
+	(*SetGroupSecurityArgs)(nil),     // 31: zim.service.group.SetGroupSecurityArgs
+	(*SecuritySettingsReply)(nil),    // 32: zim.service.group.SecuritySettingsReply
+	(*SetMemberRestrictionArgs)(nil), // 33: zim.service.group.SetMemberRestrictionArgs
+	(*RecordDLPEventArgs)(nil),       // 34: zim.service.group.RecordDLPEventArgs
+	(*OperationReply)(nil),           // 35: zim.service.group.OperationReply
 }
 var file_group_proto_depIdxs = []int32{
 	5,  // 0: zim.service.group.ListAppliesReply.applies:type_name -> zim.service.group.GroupApplyItem
 	0,  // 1: zim.service.group.SearchGroupsReply.groups:type_name -> zim.service.group.GroupInfo
 	1,  // 2: zim.service.group.MembersReply.members:type_name -> zim.service.group.Membership
 	0,  // 3: zim.service.group.MyGroupsReply.groups:type_name -> zim.service.group.GroupInfo
-	0,  // 4: zim.service.group.GetMembershipReply.group:type_name -> zim.service.group.GroupInfo
-	1,  // 5: zim.service.group.GetMembershipReply.member:type_name -> zim.service.group.Membership
-	2,  // 6: zim.service.group.Group.CreateGroup:input_type -> zim.service.group.CreateGroupArgs
-	3,  // 7: zim.service.group.Group.GetGroup:input_type -> zim.service.group.GetGroupArgs
-	4,  // 8: zim.service.group.Group.UpdateGroup:input_type -> zim.service.group.UpdateGroupArgs
-	8,  // 9: zim.service.group.Group.SearchGroups:input_type -> zim.service.group.SearchGroupsArgs
-	6,  // 10: zim.service.group.Group.ListApplies:input_type -> zim.service.group.ListAppliesArgs
-	10, // 11: zim.service.group.Group.ApplyJoin:input_type -> zim.service.group.ApplyJoinArgs
-	11, // 12: zim.service.group.Group.AnswerJoin:input_type -> zim.service.group.AnswerJoinArgs
-	12, // 13: zim.service.group.Group.TransferGroup:input_type -> zim.service.group.TransferGroupArgs
-	13, // 14: zim.service.group.Group.DismissGroup:input_type -> zim.service.group.DismissGroupArgs
-	14, // 15: zim.service.group.Group.QuitGroup:input_type -> zim.service.group.QuitGroupArgs
-	15, // 16: zim.service.group.Group.InviteMembers:input_type -> zim.service.group.InviteMembersArgs
-	16, // 17: zim.service.group.Group.RemoveMember:input_type -> zim.service.group.RemoveMemberArgs
-	17, // 18: zim.service.group.Group.Members:input_type -> zim.service.group.MembersArgs
-	19, // 19: zim.service.group.Group.MyGroups:input_type -> zim.service.group.MyGroupsArgs
-	21, // 20: zim.service.group.Group.SetAdmin:input_type -> zim.service.group.SetAdminArgs
-	22, // 21: zim.service.group.Group.MuteMember:input_type -> zim.service.group.MuteMemberArgs
-	23, // 22: zim.service.group.Group.MuteAll:input_type -> zim.service.group.MuteAllArgs
-	24, // 23: zim.service.group.Group.GetMembership:input_type -> zim.service.group.GetMembershipArgs
-	26, // 24: zim.service.group.Group.MemberIDs:input_type -> zim.service.group.MemberIDsArgs
-	0,  // 25: zim.service.group.Group.CreateGroup:output_type -> zim.service.group.GroupInfo
-	0,  // 26: zim.service.group.Group.GetGroup:output_type -> zim.service.group.GroupInfo
-	0,  // 27: zim.service.group.Group.UpdateGroup:output_type -> zim.service.group.GroupInfo
-	9,  // 28: zim.service.group.Group.SearchGroups:output_type -> zim.service.group.SearchGroupsReply
-	7,  // 29: zim.service.group.Group.ListApplies:output_type -> zim.service.group.ListAppliesReply
-	28, // 30: zim.service.group.Group.ApplyJoin:output_type -> zim.service.group.OperationReply
-	28, // 31: zim.service.group.Group.AnswerJoin:output_type -> zim.service.group.OperationReply
-	28, // 32: zim.service.group.Group.TransferGroup:output_type -> zim.service.group.OperationReply
-	28, // 33: zim.service.group.Group.DismissGroup:output_type -> zim.service.group.OperationReply
-	28, // 34: zim.service.group.Group.QuitGroup:output_type -> zim.service.group.OperationReply
-	28, // 35: zim.service.group.Group.InviteMembers:output_type -> zim.service.group.OperationReply
-	28, // 36: zim.service.group.Group.RemoveMember:output_type -> zim.service.group.OperationReply
-	18, // 37: zim.service.group.Group.Members:output_type -> zim.service.group.MembersReply
-	20, // 38: zim.service.group.Group.MyGroups:output_type -> zim.service.group.MyGroupsReply
-	28, // 39: zim.service.group.Group.SetAdmin:output_type -> zim.service.group.OperationReply
-	28, // 40: zim.service.group.Group.MuteMember:output_type -> zim.service.group.OperationReply
-	28, // 41: zim.service.group.Group.MuteAll:output_type -> zim.service.group.OperationReply
-	25, // 42: zim.service.group.Group.GetMembership:output_type -> zim.service.group.GetMembershipReply
-	27, // 43: zim.service.group.Group.MemberIDs:output_type -> zim.service.group.MemberIDsReply
-	25, // [25:44] is the sub-list for method output_type
-	6,  // [6:25] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	25, // 4: zim.service.group.GetSecurityReply.security:type_name -> zim.service.group.SecurityState
+	0,  // 5: zim.service.group.GetMembershipReply.group:type_name -> zim.service.group.GroupInfo
+	1,  // 6: zim.service.group.GetMembershipReply.member:type_name -> zim.service.group.Membership
+	25, // 7: zim.service.group.GetMembershipReply.security:type_name -> zim.service.group.SecurityState
+	25, // 8: zim.service.group.SecuritySettingsReply.security:type_name -> zim.service.group.SecurityState
+	2,  // 9: zim.service.group.Group.CreateGroup:input_type -> zim.service.group.CreateGroupArgs
+	3,  // 10: zim.service.group.Group.GetGroup:input_type -> zim.service.group.GetGroupArgs
+	4,  // 11: zim.service.group.Group.UpdateGroup:input_type -> zim.service.group.UpdateGroupArgs
+	8,  // 12: zim.service.group.Group.SearchGroups:input_type -> zim.service.group.SearchGroupsArgs
+	6,  // 13: zim.service.group.Group.ListApplies:input_type -> zim.service.group.ListAppliesArgs
+	10, // 14: zim.service.group.Group.ApplyJoin:input_type -> zim.service.group.ApplyJoinArgs
+	11, // 15: zim.service.group.Group.AnswerJoin:input_type -> zim.service.group.AnswerJoinArgs
+	12, // 16: zim.service.group.Group.TransferGroup:input_type -> zim.service.group.TransferGroupArgs
+	13, // 17: zim.service.group.Group.DismissGroup:input_type -> zim.service.group.DismissGroupArgs
+	14, // 18: zim.service.group.Group.QuitGroup:input_type -> zim.service.group.QuitGroupArgs
+	15, // 19: zim.service.group.Group.InviteMembers:input_type -> zim.service.group.InviteMembersArgs
+	16, // 20: zim.service.group.Group.RemoveMember:input_type -> zim.service.group.RemoveMemberArgs
+	17, // 21: zim.service.group.Group.Members:input_type -> zim.service.group.MembersArgs
+	19, // 22: zim.service.group.Group.MyGroups:input_type -> zim.service.group.MyGroupsArgs
+	21, // 23: zim.service.group.Group.SetAdmin:input_type -> zim.service.group.SetAdminArgs
+	22, // 24: zim.service.group.Group.MuteMember:input_type -> zim.service.group.MuteMemberArgs
+	23, // 25: zim.service.group.Group.MuteAll:input_type -> zim.service.group.MuteAllArgs
+	24, // 26: zim.service.group.Group.GetMembership:input_type -> zim.service.group.GetMembershipArgs
+	29, // 27: zim.service.group.Group.MemberIDs:input_type -> zim.service.group.MemberIDsArgs
+	31, // 28: zim.service.group.Group.SetGroupSecurity:input_type -> zim.service.group.SetGroupSecurityArgs
+	33, // 29: zim.service.group.Group.SetMemberRestriction:input_type -> zim.service.group.SetMemberRestrictionArgs
+	34, // 30: zim.service.group.Group.RecordDLPEvent:input_type -> zim.service.group.RecordDLPEventArgs
+	26, // 31: zim.service.group.Group.GetSecurity:input_type -> zim.service.group.GetSecurityArgs
+	0,  // 32: zim.service.group.Group.CreateGroup:output_type -> zim.service.group.GroupInfo
+	0,  // 33: zim.service.group.Group.GetGroup:output_type -> zim.service.group.GroupInfo
+	0,  // 34: zim.service.group.Group.UpdateGroup:output_type -> zim.service.group.GroupInfo
+	9,  // 35: zim.service.group.Group.SearchGroups:output_type -> zim.service.group.SearchGroupsReply
+	7,  // 36: zim.service.group.Group.ListApplies:output_type -> zim.service.group.ListAppliesReply
+	35, // 37: zim.service.group.Group.ApplyJoin:output_type -> zim.service.group.OperationReply
+	35, // 38: zim.service.group.Group.AnswerJoin:output_type -> zim.service.group.OperationReply
+	35, // 39: zim.service.group.Group.TransferGroup:output_type -> zim.service.group.OperationReply
+	35, // 40: zim.service.group.Group.DismissGroup:output_type -> zim.service.group.OperationReply
+	35, // 41: zim.service.group.Group.QuitGroup:output_type -> zim.service.group.OperationReply
+	35, // 42: zim.service.group.Group.InviteMembers:output_type -> zim.service.group.OperationReply
+	35, // 43: zim.service.group.Group.RemoveMember:output_type -> zim.service.group.OperationReply
+	18, // 44: zim.service.group.Group.Members:output_type -> zim.service.group.MembersReply
+	20, // 45: zim.service.group.Group.MyGroups:output_type -> zim.service.group.MyGroupsReply
+	35, // 46: zim.service.group.Group.SetAdmin:output_type -> zim.service.group.OperationReply
+	35, // 47: zim.service.group.Group.MuteMember:output_type -> zim.service.group.OperationReply
+	35, // 48: zim.service.group.Group.MuteAll:output_type -> zim.service.group.OperationReply
+	28, // 49: zim.service.group.Group.GetMembership:output_type -> zim.service.group.GetMembershipReply
+	30, // 50: zim.service.group.Group.MemberIDs:output_type -> zim.service.group.MemberIDsReply
+	32, // 51: zim.service.group.Group.SetGroupSecurity:output_type -> zim.service.group.SecuritySettingsReply
+	35, // 52: zim.service.group.Group.SetMemberRestriction:output_type -> zim.service.group.OperationReply
+	35, // 53: zim.service.group.Group.RecordDLPEvent:output_type -> zim.service.group.OperationReply
+	27, // 54: zim.service.group.Group.GetSecurity:output_type -> zim.service.group.GetSecurityReply
+	32, // [32:55] is the sub-list for method output_type
+	9,  // [9:32] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_group_proto_init() }
@@ -2097,7 +2809,7 @@ func file_group_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_group_proto_rawDesc), len(file_group_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   29,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -172,7 +172,10 @@ func (a *App) consume(ctx context.Context, event *messagesvc.Event, fanout bool)
 		ConversationID: event.ConversationID, Seq: seqValue, SendID: event.SendID,
 		RecvID: event.RecvID, GroupID: event.GroupID, MsgType: event.MsgType,
 		Content: event.Content, AtUserIDs: event.AtUserIDs, SendTime: event.SendTime,
-		Status: model.MessageNormal,
+		Status:  model.MessageNormal,
+		BurnTTL: event.BurnTTL, BurnExpireAt: event.BurnExpireAt,
+		MaxRetentionAt: event.MaxRetentionAt, SecurityFlags: event.SecurityFlags,
+		ExtType: event.ExtType, ExtPayload: event.ExtPayload,
 	}
 	result, err := a.repo.Append(ctx, msg)
 	if err != nil {
@@ -259,6 +262,7 @@ func (a *App) consume(ctx context.Context, event *messagesvc.Event, fanout bool)
 				time.Now().UnixMilli()-event.SendTime)
 			if err = a.publishResult(ctx, event, &messagesvc.SendResult{
 				ServerMsgID: serverMsgID, Seq: seqValue, SendTime: now, Recipients: recipients,
+				BurnExpireAt: event.BurnExpireAt,
 			}); err != nil {
 				return err
 			}

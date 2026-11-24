@@ -133,12 +133,17 @@ func (a *App) handle(ctx context.Context, message pipe.Message) error {
 	if event.Type == "admin.kick" {
 		return a.handleAdminKick(ctx, event)
 	}
+	if event.Type == "burn.delete" {
+		return a.handleBurnDelete(ctx, event)
+	}
 	started := time.Now()
 	payload, err := proto.Marshal(&msgwire.MessageItem{
 		ServerMsgId: event.ServerMsgID, ClientMsgId: event.ClientMsgID,
 		ConversationId: event.ConversationID, Seq: event.Seq, SendId: event.SendID,
 		RecvId: event.RecvID, GroupId: event.GroupID, MsgType: event.MsgType,
 		Content: event.Content, AtUserIds: event.AtUserIDs, SendTime: event.SendTime,
+		BurnTtl: event.BurnTTL, BurnExpireAt: event.BurnExpireAt,
+		SecurityFlags: event.SecurityFlags, ExtType: event.ExtType, ExtPayload: event.ExtPayload,
 	})
 	if err != nil {
 		log.Errorf("marshal push message failed: %v", err)
@@ -261,5 +266,34 @@ func (a *App) handleAdminKick(ctx context.Context, event *messagesvc.Event) erro
 		})
 		cancel()
 	}
+	return nil
+}
+
+// handleBurnDelete multicasts 1911 BurnDelete to both parties' online devices
+// after the timer sweep physically erased the message (ADR-0043 §2.2).
+func (a *App) handleBurnDelete(ctx context.Context, event *messagesvc.Event) error {
+	payload, err := proto.Marshal(&msgwire.BurnDeletePush{
+		ConversationId: event.ConversationID, ServerMsgId: event.ServerMsgID, Seq: event.Seq,
+	})
+	if err != nil {
+		return pipe.Poison(err)
+	}
+	envelope, err := contract.EncodeEnvelope(&contract.Envelope{
+		Opcode: contract.OpPushBurnDelete, Payload: payload,
+	})
+	if err != nil {
+		return pipe.Poison(err)
+	}
+	targets := a.buildTargets(ctx, event.Recipients)
+	buckets, _ := a.resolveRoutes(ctx, targets)
+	for gateID, keys := range buckets {
+		callCtx, cancel := context.WithTimeout(ctx, a.rpcTimeout)
+		_, _ = a.proxy.Multicast(callCtx, &cluster.MulticastArgs{
+			GID: gateID, Kind: cluster.User, Targets: keys, Ack: true,
+			Message: &cluster.Message{Route: contract.OpPushBurnDelete, Data: envelope},
+		})
+		cancel()
+	}
+	metrics.Default.Inc("zim_push_burn_delete_total", nil)
 	return nil
 }

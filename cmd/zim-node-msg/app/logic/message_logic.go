@@ -41,6 +41,7 @@ func (c *core) sendSingle(ctx node.Context) {
 		result, err := c.sendSingleMessage(ctx.Context(), uid, &message.SendRequest{
 			ClientMsgID: req.GetClientMsgId(), ReceiverID: req.GetRecvId(),
 			MsgType: req.GetMsgType(), Content: req.GetContent(),
+			BurnTTL: req.GetBurnTtl(), ExtType: req.GetExtType(), ExtPayload: req.GetExtPayload(),
 		})
 		if err != nil {
 			logSend(uid, contract.OpSendSingle, req.GetClientMsgId(), nil, err, started)
@@ -50,6 +51,7 @@ func (c *core) sendSingle(ctx node.Context) {
 		logSend(uid, contract.OpSendSingle, req.GetClientMsgId(), result, nil, started)
 		payload, _ := proto.Marshal(&msgsvc.SendSingleRes{
 			ServerMsgId: result.ServerMsgID, Seq: result.Seq, SendTime: result.SendTime,
+			BurnExpireAt: result.BurnExpireAt,
 		})
 		c.respond(ctx, contract.OpSendSingle, payload, nil)
 	})
@@ -78,6 +80,7 @@ func (c *core) sendGroup(ctx node.Context) {
 		result, err := c.sendGroupMessage(ctx.Context(), uid, &message.SendRequest{
 			ClientMsgID: req.GetClientMsgId(), GroupID: req.GetGroupId(),
 			MsgType: req.GetMsgType(), Content: req.GetContent(), AtUserIDs: req.GetAtUserIds(),
+			BurnTTL: req.GetBurnTtl(), ExtType: req.GetExtType(), ExtPayload: req.GetExtPayload(),
 		})
 		if err != nil {
 			logSend(uid, contract.OpSendGroup, req.GetClientMsgId(), nil, err, started)
@@ -87,7 +90,7 @@ func (c *core) sendGroup(ctx node.Context) {
 		logSend(uid, contract.OpSendGroup, req.GetClientMsgId(), result, nil, started)
 		payload, _ := proto.Marshal(&msgsvc.SendGroupRes{
 			ServerMsgId: result.ServerMsgID, Seq: result.Seq, SendTime: result.SendTime,
-			UnreadCount: result.UnreadCount,
+			UnreadCount: result.UnreadCount, BurnExpireAt: result.BurnExpireAt,
 		})
 		c.respond(ctx, contract.OpSendGroup, payload, nil)
 	})

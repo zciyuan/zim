@@ -60,7 +60,7 @@ func (a *App) publishOffline(ctx context.Context, event *messagesvc.Event,
 	if err := a.offlinePublisher.Publish(ctx, &pushoffline.Event{
 		Uids: offline, ServerMsgID: event.ServerMsgID, ConversationID: event.ConversationID,
 		Seq: event.Seq, SendID: event.SendID, MsgType: event.MsgType,
-		SendTime: event.SendTime, AtUserIDs: event.AtUserIDs,
+		SendTime: event.SendTime, AtUserIDs: event.AtUserIDs, BurnTTL: event.BurnTTL,
 	}); err != nil {
 		log.Warnf("publish offline push failed: server_msg_id = %s uids = %d err = %v",
 			event.ServerMsgID, len(offline), err)

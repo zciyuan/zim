@@ -44,6 +44,12 @@ type Repository interface {
 	SetMutedUntil(ctx context.Context, gid int64, until int64) error
 	CountMembers(ctx context.Context, gid int64) (int, error)
 	MemberIDs(ctx context.Context, gid int64) ([]int64, error)
+	// ADR-0043: security settings and member restrictions.
+	GetSecurity(ctx context.Context, gid int64) (*model.GroupSecuritySettings, error)
+	UpsertSecurity(ctx context.Context, settings *model.GroupSecuritySettings) error
+	GetRestriction(ctx context.Context, gid, uid int64) (*model.GroupMemberRestriction, error)
+	UpsertRestriction(ctx context.Context, restriction *model.GroupMemberRestriction) error
+	InsertDLPEvent(ctx context.Context, event *model.DLPSecurityEvent) error
 }
 
 var _ pb.GroupServer = (*Server)(nil)
@@ -319,6 +325,10 @@ func (s *Server) doRemoveMember(ctx context.Context, args removeMemberArgs) (*pb
 		return nil, status.Error(codes.NotFound, "member not found")
 	}
 	s.record(ctx, args.GroupID, args.UserID, model.ChangeDelete)
+	// ADR-0043 G-10: a kicked member must be evicted from the voice room.
+	if s.statusPub != nil {
+		_ = s.statusPub.PublishKick(ctx, args.GroupID, args.UserID, args.OperatorID)
+	}
 	return &pb.OperationReply{Ok: true}, nil
 }
 
@@ -389,6 +399,11 @@ func (s *Server) doMuteMember(ctx context.Context, args muteMemberArgs) (*pb.Ope
 		return nil, status.Error(codes.NotFound, "member not found")
 	}
 	s.record(ctx, args.GroupID, args.UserID, model.ChangeUpdate)
+	// ADR-0043 G-10: mute/unmute must reach voiceroom to revoke/restore
+	// LiveKit publish rights.
+	if s.statusPub != nil {
+		_ = s.statusPub.PublishMute(ctx, args.GroupID, args.UserID, 0, args.Until, args.OperatorID)
+	}
 	return &pb.OperationReply{Ok: true}, nil
 }
 
@@ -404,6 +419,11 @@ func (s *Server) doMuteAll(ctx context.Context, args muteAllArgs) (*pb.Operation
 	if err = s.repo.SetMutedUntil(ctx, args.GroupID, args.Until); err != nil {
 		return nil, status.Error(codes.Internal, "mute group failed")
 	}
+	// ADR-0043 G-10: mute-all applies to every member, so the event carries
+	// the full-mute flag; voiceroom revokes every room member's publish right.
+	if s.statusPub != nil {
+		_ = s.statusPub.PublishMute(ctx, args.GroupID, 0, model.MuteFlagAll, args.Until, args.OperatorID)
+	}
 	return &pb.OperationReply{Ok: true}, nil
 }
 
@@ -417,7 +437,21 @@ func (s *Server) doGetMembership(ctx context.Context, args getMembershipArgs) (*
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetMembershipReply{Group: info, Member: membership(member)}, nil
+	// ADR-0043: attach the mute/security facts the message path needs.
+	settings, secErr := s.repo.GetSecurity(ctx, args.GroupID)
+	if secErr != nil {
+		return nil, status.Error(codes.Internal, "security lookup failed")
+	}
+	restriction, restErr := s.repo.GetRestriction(ctx, args.GroupID, args.UserID)
+	if restErr != nil {
+		return nil, status.Error(codes.Internal, "restriction lookup failed")
+	}
+	now := time.Now().UnixMilli()
+	return &pb.GetMembershipReply{
+		Group:    info,
+		Member:   membership(member),
+		Security: securityState(settings, restriction, member, now),
+	}, nil
 }
 
 // MemberIDs returns all member IDs for fanout.

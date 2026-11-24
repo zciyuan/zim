@@ -24,6 +24,7 @@ func New(database *mongo.Database) *DAO {
 	return &DAO{
 		blocks: database.Collection(blocksCollection),
 		idem:   database.Collection(idemCollection),
+		burn:   database.Collection(burnCollection),
 	}
 }
 
@@ -77,6 +78,11 @@ func (d *DAO) appendDirect(ctx context.Context, msg *model.Message) (*AppendResu
 		if writeErr := d.writeBlock(ctx, &repaired); writeErr != nil {
 			return nil, writeErr
 		}
+		if repaired.BurnTTL > 0 {
+			if burnErr := d.StoreBurnPayload(ctx, &repaired); burnErr != nil {
+				return nil, burnErr
+			}
+		}
 		if markErr := d.markCommitted(ctx, key, now); markErr != nil {
 			return nil, markErr
 		}
@@ -86,6 +92,12 @@ func (d *DAO) appendDirect(ctx context.Context, msg *model.Message) (*AppendResu
 	if err = d.writeBlock(ctx, msg); err != nil {
 		// Keep the pending idem row so a later retry can repair the block.
 		return nil, err
+	}
+	// Burn payloads live in burn_messages with TTL erasure (ADR-0043 §2.4.1).
+	if msg.BurnTTL > 0 {
+		if burnErr := d.StoreBurnPayload(ctx, msg); burnErr != nil {
+			return nil, burnErr
+		}
 	}
 	if err = d.markCommitted(ctx, key, now); err != nil {
 		return nil, err
@@ -101,6 +113,15 @@ func (d *DAO) writeBlock(ctx context.Context, msg *model.Message) error {
 	blockIdx := (msg.Seq - 1) / model.MessageBlockSize
 	docID := fmt.Sprintf("%s:%d", msg.ConversationID, blockIdx)
 	filter := bson.M{"_id": docID, "msgs.msg.server_msg_id": bson.M{"$ne": msg.ServerMsgID}, "msgs.msg.seq": bson.M{"$ne": msg.Seq}}
+	// Burn messages never enter the full-text search index and their content
+	// stays out of the main block: only light metadata is kept here while the
+	// payload lives in burn_messages with TTL erasure (ADR-0043 §2.4.1).
+	content := msg.Content
+	tokens := searchTokens(msg.Content)
+	if msg.BurnTTL > 0 {
+		content = ""
+		tokens = nil
+	}
 	update := bson.M{
 		"$setOnInsert": bson.M{
 			"doc_id":          docID,
@@ -112,8 +133,11 @@ func (d *DAO) writeBlock(ctx context.Context, msg *model.Message) error {
 				Msg: messageDoc{
 					ServerMsgID: msg.ServerMsgID, ClientMsgID: msg.ClientMsgID, SendID: msg.SendID,
 					RecvID: msg.RecvID, GroupID: msg.GroupID, MsgType: msg.MsgType,
-					Content: msg.Content, SearchTokens: searchTokens(msg.Content), AtUserIDs: msg.AtUserIDs, Seq: msg.Seq,
+					Content: content, SearchTokens: tokens, AtUserIDs: msg.AtUserIDs, Seq: msg.Seq,
 					SendTime: msg.SendTime, Status: msg.Status,
+					BurnTTL: msg.BurnTTL, BurnExpireAt: msg.BurnExpireAt,
+					MaxRetentionAt: msg.MaxRetentionAt, SecurityFlags: msg.SecurityFlags,
+					ExtType: msg.ExtType, ExtPayload: msg.ExtPayload,
 				},
 			},
 		},
@@ -178,6 +202,11 @@ func (d *DAO) FindBySeq(ctx context.Context, conversationID string, begin, end i
 	if len(result) > limit {
 		result = result[:limit]
 	}
+	// Burn payloads: hydrate content from burn_messages or return tombstones
+	// for TTL-erased bodies (ADR-0043 §2.4.2).
+	if err = d.LoadBurnPayloads(ctx, time.Now().UnixMilli(), result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
@@ -197,6 +226,9 @@ func (d *DAO) FindOne(ctx context.Context, serverMsgID string) (*model.Message, 
 	}
 	converted := convert(block.Msgs[0].Msg)
 	converted.ConversationID = block.ConversationID
+	if err = d.LoadBurnPayloads(ctx, time.Now().UnixMilli(), []*model.Message{converted}); err != nil {
+		return nil, err
+	}
 	return converted, nil
 }
 
@@ -231,6 +263,9 @@ func convert(doc messageDoc) *model.Message {
 		ServerMsgID: doc.ServerMsgID, ClientMsgID: doc.ClientMsgID, SendID: doc.SendID,
 		RecvID: doc.RecvID, GroupID: doc.GroupID, MsgType: doc.MsgType, Content: doc.Content,
 		AtUserIDs: doc.AtUserIDs, Seq: doc.Seq, SendTime: doc.SendTime, Status: doc.Status,
+		BurnTTL: doc.BurnTTL, BurnExpireAt: doc.BurnExpireAt, MaxRetentionAt: doc.MaxRetentionAt,
+		IsBurned: doc.IsBurned, SecurityFlags: doc.SecurityFlags,
+		ExtType: doc.ExtType, ExtPayload: doc.ExtPayload,
 	}
 }
 

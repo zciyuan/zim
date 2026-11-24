@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dobyte/due/v2/cluster/node"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/zciyuan/ZIM/internal/component/ratelimit"
 	changelogsvc "github.com/zciyuan/ZIM/internal/service/changelog/server"
@@ -17,6 +18,7 @@ import (
 	reactionsvc "github.com/zciyuan/ZIM/internal/service/reaction/server"
 	rtcsvc "github.com/zciyuan/ZIM/internal/service/rtc/server"
 	syncsvc "github.com/zciyuan/ZIM/internal/service/syncsvc/server"
+	"github.com/zciyuan/ZIM/zimfw/pipe"
 	"github.com/zciyuan/ZIM/zimfw/route"
 	rtcfw "github.com/zciyuan/ZIM/zimfw/rtc"
 )
@@ -43,10 +45,37 @@ type core struct {
 	deviceIndex   route.DeviceSource
 	reactions     *reactionsvc.Service
 	rtcClientURL  string
+	cache         redis.UniversalClient
+	dlpAudit      DLPAuditPublisher
 	watchMu       sync.Mutex
 	watches       map[int64]*presenceWatch
 	binds         *keyedActor
 	rtcActors     *keyedActor
+}
+
+// DLPAuditPublisher publishes screenshot/record audit records to
+// zim.pipe.dlpScreenshotAudit (ADR-0043 §3.2.4).
+type DLPAuditPublisher interface {
+	PublishAudit(ctx context.Context, event *DLPAuditEvent) error
+}
+
+// DLPAuditEvent is one screenshot/record report.
+type DLPAuditEvent struct {
+	ID          int64  `json:"id"`
+	ConvID      string `json:"conv_id"`
+	ConvType    int16  `json:"conv_type"`
+	UID         int64  `json:"uid"`
+	EventType   int16  `json:"event_type"`
+	DeviceInfo  string `json:"device_info"`
+	ActionTaken int16  `json:"action_taken"`
+	CreatedAt   int64  `json:"created_at"`
+}
+
+// kafkaDLPAuditPublisher publishes audit events to
+// zim.pipe.dlpScreenshotAudit (ADR-0043 §3.2.4).
+type kafkaDLPAuditPublisher struct {
+	producer pipe.Producer
+	topic    string
 }
 
 // loginService implements the op:1001 use case without due/node dependencies.

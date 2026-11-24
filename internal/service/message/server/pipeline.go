@@ -57,6 +57,9 @@ func (p *Pipeline) SendSingle(ctx context.Context, sender int64, req *SendReques
 // SendGroup validates and publishes a group message.
 func (p *Pipeline) SendGroup(ctx context.Context, sender int64, req *SendRequest) (*SendResult, error) {
 	if err := p.service.checkSensitive(ctx, req); err != nil {
+		// ADR-0043 §3.1.4.1: a HIGH_RISK hit auto-mutes the sender when the
+		// group enables sensitive_auto_mute_s.
+		_ = p.service.autoMuteSensitive(ctx, sender, req.GroupID)
 		return nil, err
 	}
 	prepared, err := p.service.PrepareGroup(ctx, sender, req)
@@ -71,11 +74,15 @@ func (p *Pipeline) send(ctx context.Context, sender int64, prepared *Prepared, r
 	if p.now != nil {
 		now = p.now
 	}
+	sendTime := now().UnixMilli()
+	burnTTL, burnExpireAt, retentionAt, securityFlags := applyBurn(req, sendTime, req.GroupID > 0)
 	event := &Event{
 		ClientMsgID: req.ClientMsgID, ConversationID: prepared.ConversationID,
 		SendID: sender, RecvID: req.ReceiverID, GroupID: req.GroupID,
 		MsgType: req.MsgType, Content: req.Content, AtUserIDs: req.AtUserIDs,
-		SendTime: now().UnixMilli(), Recipients: prepared.Recipients,
+		SendTime: sendTime, Recipients: prepared.Recipients,
+		BurnTTL: burnTTL, BurnExpireAt: burnExpireAt, MaxRetentionAt: retentionAt,
+		SecurityFlags: securityFlags, ExtType: req.ExtType, ExtPayload: req.ExtPayload,
 	}
 	publish := func(publishCtx context.Context) error {
 		publishStart := time.Now()
@@ -142,6 +149,7 @@ func (q *RedisResultQueue) Publish(ctx context.Context, uid int64, clientMsgID s
 	broadcast, err := json.Marshal(resultEvent{
 		UID: uid, ClientMsgID: clientMsgID, ServerMsgID: result.ServerMsgID,
 		Seq: result.Seq, SendTime: result.SendTime, Duplicate: result.Duplicate,
+		BurnExpireAt: result.BurnExpireAt,
 	})
 	if err != nil {
 		return err
