@@ -151,3 +151,165 @@ message ParticipantStateReq {
 message ParticipantStateRes {
   string call_id = 1;
 }
+
+// ---- voice room (op:1808-1819, ADR-0043) ----
+
+// 1808 创建语音房。room_type: 1 GROUP / 2 PUBLIC / 3 PASSWORD。
+message VoiceRoomCreateReq {
+  int32  room_type      = 1;
+  int64  group_id       = 2; // GROUP rooms only
+  string title          = 3;
+  string password       = 4; // PASSWORD rooms only
+  int32  seat_count     = 5; // 8 default, <= 12
+  int32  join_seat_mode = 6; // 1 free / 2 hand-up approval
+}
+
+message VoiceRoomCreateRes {
+  string room_id      = 1;
+  int32  room_type    = 2;
+  int64  group_id     = 3;
+  int64  owner_uid    = 4;
+  string title        = 5;
+  int32  seat_count   = 6;
+  int32  join_seat_mode = 7;
+  string token        = 8; // owner join token
+  string sfu_url      = 9;
+  int64  expire_at    = 10;
+}
+
+// 1809 语音房列表：group_id>0 查群关联房，否则查公开房。
+message VoiceRoomListReq {
+  int64 group_id = 1;
+  int32 offset   = 2;
+  int32 limit    = 3;
+}
+
+message VoiceRoomItem {
+  string room_id      = 1;
+  int32  room_type    = 2;
+  int64  group_id     = 3;
+  int64  owner_uid    = 4;
+  string title        = 5;
+  int32  online_count = 6;
+  int32  seat_count   = 7;
+}
+
+message VoiceRoomListRes {
+  repeated VoiceRoomItem rooms = 1;
+  bool   has_more = 2;
+}
+
+// 1810 加入语音房（密码房校验密码；返回进房 token）。
+message VoiceRoomJoinReq {
+  string room_id  = 1;
+  string password = 2;
+}
+
+message VoiceRoomJoinRes {
+  string room_id = 1;
+  string token   = 2;
+  string sfu_url = 3;
+  int64  expire_at = 4;
+  repeated SeatState seats = 5;
+}
+
+// 1811 token 续期（剩余 5 分钟时调用；服务端复核未被踢/拉黑）。
+message VoiceRoomRefreshTokenReq {
+  string room_id = 1;
+}
+
+message VoiceRoomRefreshTokenRes {
+  string token    = 1;
+  int64  expire_at = 2;
+}
+
+// SeatState 是麦位快照：status 0 EMPTY / 1 OCCUPIED_SPEAKING
+// 2 OCCUPIED_SELF_MUTED / 3 OCCUPIED_FORCE_MUTED / 4 LOCKED / 5 RECONNECTING。
+message SeatState {
+  int32 seat_index = 1;
+  int64 uid        = 2;
+  int32 status     = 3;
+}
+
+// 1812 上麦（自由上麦模式）。
+message TakeSeatReq {
+  string room_id    = 1;
+  int32  seat_index = 2;
+}
+
+// 1813 下麦。
+message LeaveSeatReq {
+  string room_id = 1;
+}
+
+// 1814 踢下麦（房主/管理员）。
+message KickSeatReq {
+  string room_id    = 1;
+  int32  seat_index = 2;
+  int64  uid        = 3;
+}
+
+// 1815 强制闭麦/解除（服务端同步 LiveKit CanPublish）。
+message ForceMuteSeatReq {
+  string room_id    = 1;
+  int32  seat_index = 2;
+  bool   muted      = 3;
+}
+
+// 1816 锁麦/解锁。
+message LockSeatReq {
+  string room_id    = 1;
+  int32  seat_index = 2;
+  bool   locked     = 3;
+}
+
+// 1817 举手（举手审批模式）。
+message HandUpReq {
+  string room_id = 1;
+}
+
+// 1818 审批举手。
+message ApproveHandUpReq {
+  string room_id    = 1;
+  int64  uid        = 2;
+  int32  seat_index = 3;
+  bool   accept     = 4;
+}
+
+// 1819 邀请上麦。
+message InviteToSeatReq {
+  string room_id    = 1;
+  int64  uid        = 2;
+  int32  seat_index = 3;
+}
+
+// 麦位操作通用响应。
+message SeatOperationRes {
+  bool   ok            = 1;
+  repeated SeatState seats = 2;
+}
+
+// 1912 麦位更新推送（seq=0）。
+message SeatUpdatePush {
+  string room_id          = 1;
+  repeated SeatState seats = 2;
+}
+
+// 1913 语音房关闭推送（seq=0）。
+message VoiceRoomClosedPush {
+  string room_id = 1;
+  int32  reason  = 2; // 1 empty timeout / 2 owner closed / 3 admin forced
+}
+
+// 1914 礼物/打赏特效广播（seq=0）。single >= 50 USDT 全屏特效。
+message VoiceRoomGiftPush {
+  string room_id      = 1;
+  int64  sender_uid   = 2;
+  int64  receiver_uid = 3;
+  int32  gift_id      = 4;
+  int32  gift_count   = 5;
+  string combo_id     = 6;
+  int32  combo_count  = 7;
+  int64  amount       = 8; // micro USDT
+  bool   is_fullscreen_effect = 9;
+}

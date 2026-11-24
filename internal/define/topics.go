@@ -7,9 +7,19 @@ const (
 	TopicToPush        = "zim.pipe.toPush"
 	TopicToOfflinePush = "zim.pipe.toOfflinePush"
 
-	ConsumerGroupTransfer = "zim-transfer"
-	ConsumerGroupPush     = "zim-push"
-	ConsumerGroupOffline  = "zim-push-offline"
+	// ADR-0043: burn/DLP/group-status event topics.
+	TopicBurnMediaDelete    = "zim.pipe.burnMediaDelete"
+	TopicGroupMemberStatus  = "zim.pipe.groupMemberStatus"
+	TopicDLPScreenshotAudit = "zim.pipe.dlpScreenshotAudit"
+	TopicWalletRpClaim      = "zim.pipe.walletRpClaim"
+	TopicWalletRpRefund     = "zim.pipe.walletRpRefund"
+	TopicWalletTipSettled   = "zim.pipe.walletTipSettled"
+
+	ConsumerGroupTransfer        = "zim-transfer"
+	ConsumerGroupPush            = "zim-push"
+	ConsumerGroupOffline         = "zim-push-offline"
+	ConsumerGroupVoiceroomStatus = "zim-voiceroom-status"
+	ConsumerGroupBurnMedia       = "zim-crontask-burn-media"
 
 	DLQSuffix = ".DLQ"
 )

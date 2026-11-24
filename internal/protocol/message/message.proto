@@ -18,6 +18,13 @@ message MessageItem {
   int64 send_time = 11;
   int32 status = 12;
   repeated Reaction reactions = 13;
+  // ADR-0043 reserved ranges: 50-59 burn, 60-69 security, 70-79 ext card.
+  int32  burn_ttl       = 50; // >0 = burn after reading, seconds
+  int64  burn_expire_at = 51; // absolute destroy time (UTC ms); 0 = not counting yet
+  bool   is_burned      = 52; // content destroyed (SyncMissing tombstone)
+  uint32 security_flags = 60; // 1 no-forward 2 no-copy 4 no-save 8 no-search 16 anti-screenshot
+  int32  ext_type       = 70; // 1 red packet card / 2 tip card / 3 voice-room card
+  string ext_payload    = 71; // JSON card payload
 }
 
 message SendSingleReq {
@@ -28,12 +35,16 @@ message SendSingleReq {
   bool no_offline = 5;
   bool no_notification = 6;
   bool read_receipt = 7;
+  int32 burn_ttl = 8; // ADR-0043: >0 = burn after reading
+  int32 ext_type = 9; // business card: 1 red packet / 2 tip / 3 voice room
+  string ext_payload = 10;
 }
 
 message SendSingleRes {
   string server_msg_id = 1;
   int64 seq = 2;
   int64 send_time = 3;
+  int64 burn_expire_at = 4; // 0 unless group-style immediate countdown applies
 }
 
 message SendGroupReq {
@@ -44,6 +55,9 @@ message SendGroupReq {
   repeated string at_user_ids = 5;
   bool no_offline = 6;
   bool no_notification = 7;
+  int32 burn_ttl = 8; // ADR-0043: group burn counts down from creation
+  int32 ext_type = 9; // business card: 1 red packet / 2 tip / 3 voice room
+  string ext_payload = 10;
 }
 
 message SendGroupRes {
@@ -51,6 +65,7 @@ message SendGroupRes {
   int64 seq = 2;
   int64 send_time = 3;
   int64 unread_count = 4;
+  int64 burn_expire_at = 5;
 }
 
 message PullBySeqReq {
@@ -203,4 +218,51 @@ message OnlineUser {
 message OnlineChangePush {
   int64 uid    = 1;
   bool  online = 2;
+}
+
+// 1518 阅后即焚已读上报：单聊接收方阅读后触发倒计时（ADR-0043）。
+message BurnReadAckReq {
+  string conversation_id = 1;
+  string server_msg_id   = 2;
+  int64  seq             = 3;
+}
+
+message BurnReadAckRes {
+  int64 burn_expire_at = 1;
+  int64 server_now_ms  = 2;
+}
+
+// 1910 倒计时开始推送（发给双方所有在线端，seq=0）。
+message BurnTimerStartPush {
+  string conversation_id = 1;
+  string server_msg_id   = 2;
+  int64  seq             = 3;
+  int64  burn_expire_at  = 4;
+  int64  server_now_ms   = 5;
+}
+
+// 1911 强制销毁推送（提前清理或到期兜底，seq=0）。
+message BurnDeletePush {
+  string conversation_id = 1;
+  string server_msg_id   = 2;
+  int64  seq             = 3;
+}
+
+// 1519 截屏/录屏上报（ADR-0043，群聊/单聊通用）。
+message ScreenshotReportReq {
+  string conversation_id = 1;
+  int32  conv_type       = 2; // 1 single / 2 group
+  int32  event_type      = 3; // 1 screenshot / 2 screen record start
+  string device_info     = 4;
+}
+
+message ScreenshotReportRes {
+  bool ok = 1;
+}
+
+// 1907 通用通知推送（seq=0）：DLP 灰条、阅后即焚会话提示等。
+message NotifyPush {
+  string conversation_id = 1;
+  string content         = 2;
+  int64  at              = 3;
 }

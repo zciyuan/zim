@@ -13,17 +13,19 @@ var ErrRoomNotFound = errors.New("rtc room not found")
 
 // Dummy is a deterministic in-memory provider for tests and P-RTC-0.
 type Dummy struct {
-	mu     sync.Mutex
-	rooms  map[string]*Room
-	tokens map[string]string
-	events chan RoomEvent
+	mu      sync.Mutex
+	rooms   map[string]*Room
+	tokens  map[string]string
+	permits map[string]bool
+	events  chan RoomEvent
 }
 
 // NewDummy returns a dummy provider.
 func NewDummy() *Dummy {
 	return &Dummy{
 		rooms: make(map[string]*Room), tokens: make(map[string]string),
-		events: make(chan RoomEvent, 16),
+		permits: make(map[string]bool),
+		events:  make(chan RoomEvent, 16),
 	}
 }
 
@@ -40,7 +42,7 @@ func (d *Dummy) CreateRoom(_ context.Context, req RoomReq) (*Room, error) {
 }
 
 // IssueToken returns a deterministic dummy token.
-func (d *Dummy) IssueToken(_ context.Context, room string, uid int64, _ Role) (string, error) {
+func (d *Dummy) IssueToken(_ context.Context, room string, uid int64, role Role) (string, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.rooms[room] == nil {
@@ -48,7 +50,40 @@ func (d *Dummy) IssueToken(_ context.Context, room string, uid int64, _ Role) (s
 	}
 	token := room + ":" + strconv.FormatInt(uid, 10)
 	d.tokens[token] = room
+	d.permits[token] = role >= RoleParticipant
 	return token, nil
+}
+
+// JoinRoom issues a join token; listeners join without publish permission.
+func (d *Dummy) JoinRoom(_ context.Context, room string, uid int64, role Role) (string, error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.rooms[room] == nil {
+		return "", ErrRoomNotFound
+	}
+	token := room + ":" + strconv.FormatInt(uid, 10)
+	d.tokens[token] = room
+	d.permits[token] = role >= RoleParticipant
+	return token, nil
+}
+
+// UpdateParticipantPermission records the server-side publish permission.
+func (d *Dummy) UpdateParticipantPermission(_ context.Context, room string, uid int64, canPublish bool) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.rooms[room] == nil {
+		return ErrRoomNotFound
+	}
+	d.permits[room+":"+strconv.FormatInt(uid, 10)] = canPublish
+	return nil
+}
+
+// Permit returns the recorded publish permission for tests.
+func (d *Dummy) Permit(room string, uid int64) (bool, bool) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	permit, ok := d.permits[room+":"+strconv.FormatInt(uid, 10)]
+	return permit, ok
 }
 
 // RemoveParticipant removes a participant token (no-op if absent).
@@ -61,6 +96,7 @@ func (d *Dummy) RemoveParticipant(_ context.Context, room string, uid int64) err
 	for token := range d.tokens {
 		if token == room+":"+strconv.FormatInt(uid, 10) {
 			delete(d.tokens, token)
+			delete(d.permits, token)
 		}
 	}
 	return nil
@@ -74,6 +110,7 @@ func (d *Dummy) DeleteRoom(_ context.Context, room string) error {
 	for token, tokenRoom := range d.tokens {
 		if tokenRoom == room {
 			delete(d.tokens, token)
+			delete(d.permits, token)
 		}
 	}
 	return nil

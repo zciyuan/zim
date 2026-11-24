@@ -73,3 +73,57 @@ func TestLiveKitTTLDefault(t *testing.T) {
 		t.Fatalf("ttl = %v", provider.ttl)
 	}
 }
+
+func TestLiveKitJoinRoomListenerMuted(t *testing.T) {
+	provider := NewLiveKit(LiveKitConfig{URL: "http://localhost", APIKey: "key", APISecret: "secret"})
+	token, err := provider.JoinRoom(context.Background(), "room-1", 10002, RoleListener)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parts := strings.Split(token, ".")
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	var claims map[string]any
+	if err = json.Unmarshal(payload, &claims); err != nil {
+		t.Fatal(err)
+	}
+	video := claims["video"].(map[string]any)
+	if video["canPublish"] != false {
+		t.Fatalf("listener must join muted: %+v", video)
+	}
+}
+
+func TestLiveKitUpdateParticipantPermission(t *testing.T) {
+	var gotBody map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasSuffix(r.URL.Path, "UpdateParticipant") {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_ = json.NewDecoder(r.Body).Decode(&gotBody)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+	provider := NewLiveKit(LiveKitConfig{URL: server.URL, APIKey: "key", APISecret: "secret"})
+	if err := provider.UpdateParticipantPermission(context.Background(), "room-1", 10001, true); err != nil {
+		t.Fatal(err)
+	}
+	if gotBody == nil || gotBody["room"] != "room-1" || gotBody["identity"] != "10001" {
+		t.Fatalf("body = %+v", gotBody)
+	}
+	permission, ok := gotBody["permission"].(map[string]any)
+	if !ok || permission["canPublish"] != true {
+		t.Fatalf("permission = %+v", gotBody["permission"])
+	}
+}
+
+func TestLiveKitUpdateParticipantMissingRoom(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+	provider := NewLiveKit(LiveKitConfig{URL: server.URL, APIKey: "key", APISecret: "secret"})
+	// A missing room/participant is treated as success (idempotent cleanup).
+	if err := provider.UpdateParticipantPermission(context.Background(), "gone", 1, false); err != nil {
+		t.Fatal(err)
+	}
+}

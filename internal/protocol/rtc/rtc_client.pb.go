@@ -1272,6 +1272,1424 @@ func (x *ParticipantStateRes) GetCallId() string {
 	return ""
 }
 
+// 1808 创建语音房。room_type: 1 GROUP / 2 PUBLIC / 3 PASSWORD。
+type VoiceRoomCreateReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomType      int32                  `protobuf:"varint,1,opt,name=room_type,json=roomType,proto3" json:"room_type,omitempty"`
+	GroupId       int64                  `protobuf:"varint,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"` // GROUP rooms only
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`                                // PASSWORD rooms only
+	SeatCount     int32                  `protobuf:"varint,5,opt,name=seat_count,json=seatCount,proto3" json:"seat_count,omitempty"`            // 8 default, <= 12
+	JoinSeatMode  int32                  `protobuf:"varint,6,opt,name=join_seat_mode,json=joinSeatMode,proto3" json:"join_seat_mode,omitempty"` // 1 free / 2 hand-up approval
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomCreateReq) Reset() {
+	*x = VoiceRoomCreateReq{}
+	mi := &file_rtc_client_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomCreateReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomCreateReq) ProtoMessage() {}
+
+func (x *VoiceRoomCreateReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomCreateReq.ProtoReflect.Descriptor instead.
+func (*VoiceRoomCreateReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *VoiceRoomCreateReq) GetRoomType() int32 {
+	if x != nil {
+		return x.RoomType
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateReq) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateReq) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *VoiceRoomCreateReq) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *VoiceRoomCreateReq) GetSeatCount() int32 {
+	if x != nil {
+		return x.SeatCount
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateReq) GetJoinSeatMode() int32 {
+	if x != nil {
+		return x.JoinSeatMode
+	}
+	return 0
+}
+
+type VoiceRoomCreateRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	RoomType      int32                  `protobuf:"varint,2,opt,name=room_type,json=roomType,proto3" json:"room_type,omitempty"`
+	GroupId       int64                  `protobuf:"varint,3,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	OwnerUid      int64                  `protobuf:"varint,4,opt,name=owner_uid,json=ownerUid,proto3" json:"owner_uid,omitempty"`
+	Title         string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
+	SeatCount     int32                  `protobuf:"varint,6,opt,name=seat_count,json=seatCount,proto3" json:"seat_count,omitempty"`
+	JoinSeatMode  int32                  `protobuf:"varint,7,opt,name=join_seat_mode,json=joinSeatMode,proto3" json:"join_seat_mode,omitempty"`
+	Token         string                 `protobuf:"bytes,8,opt,name=token,proto3" json:"token,omitempty"` // owner join token
+	SfuUrl        string                 `protobuf:"bytes,9,opt,name=sfu_url,json=sfuUrl,proto3" json:"sfu_url,omitempty"`
+	ExpireAt      int64                  `protobuf:"varint,10,opt,name=expire_at,json=expireAt,proto3" json:"expire_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomCreateRes) Reset() {
+	*x = VoiceRoomCreateRes{}
+	mi := &file_rtc_client_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomCreateRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomCreateRes) ProtoMessage() {}
+
+func (x *VoiceRoomCreateRes) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomCreateRes.ProtoReflect.Descriptor instead.
+func (*VoiceRoomCreateRes) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *VoiceRoomCreateRes) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *VoiceRoomCreateRes) GetRoomType() int32 {
+	if x != nil {
+		return x.RoomType
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateRes) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateRes) GetOwnerUid() int64 {
+	if x != nil {
+		return x.OwnerUid
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateRes) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *VoiceRoomCreateRes) GetSeatCount() int32 {
+	if x != nil {
+		return x.SeatCount
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateRes) GetJoinSeatMode() int32 {
+	if x != nil {
+		return x.JoinSeatMode
+	}
+	return 0
+}
+
+func (x *VoiceRoomCreateRes) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *VoiceRoomCreateRes) GetSfuUrl() string {
+	if x != nil {
+		return x.SfuUrl
+	}
+	return ""
+}
+
+func (x *VoiceRoomCreateRes) GetExpireAt() int64 {
+	if x != nil {
+		return x.ExpireAt
+	}
+	return 0
+}
+
+// 1809 语音房列表：group_id>0 查群关联房，否则查公开房。
+type VoiceRoomListReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GroupId       int64                  `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	Offset        int32                  `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomListReq) Reset() {
+	*x = VoiceRoomListReq{}
+	mi := &file_rtc_client_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomListReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomListReq) ProtoMessage() {}
+
+func (x *VoiceRoomListReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomListReq.ProtoReflect.Descriptor instead.
+func (*VoiceRoomListReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *VoiceRoomListReq) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *VoiceRoomListReq) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *VoiceRoomListReq) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type VoiceRoomItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	RoomType      int32                  `protobuf:"varint,2,opt,name=room_type,json=roomType,proto3" json:"room_type,omitempty"`
+	GroupId       int64                  `protobuf:"varint,3,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	OwnerUid      int64                  `protobuf:"varint,4,opt,name=owner_uid,json=ownerUid,proto3" json:"owner_uid,omitempty"`
+	Title         string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
+	OnlineCount   int32                  `protobuf:"varint,6,opt,name=online_count,json=onlineCount,proto3" json:"online_count,omitempty"`
+	SeatCount     int32                  `protobuf:"varint,7,opt,name=seat_count,json=seatCount,proto3" json:"seat_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomItem) Reset() {
+	*x = VoiceRoomItem{}
+	mi := &file_rtc_client_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomItem) ProtoMessage() {}
+
+func (x *VoiceRoomItem) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomItem.ProtoReflect.Descriptor instead.
+func (*VoiceRoomItem) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *VoiceRoomItem) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *VoiceRoomItem) GetRoomType() int32 {
+	if x != nil {
+		return x.RoomType
+	}
+	return 0
+}
+
+func (x *VoiceRoomItem) GetGroupId() int64 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *VoiceRoomItem) GetOwnerUid() int64 {
+	if x != nil {
+		return x.OwnerUid
+	}
+	return 0
+}
+
+func (x *VoiceRoomItem) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *VoiceRoomItem) GetOnlineCount() int32 {
+	if x != nil {
+		return x.OnlineCount
+	}
+	return 0
+}
+
+func (x *VoiceRoomItem) GetSeatCount() int32 {
+	if x != nil {
+		return x.SeatCount
+	}
+	return 0
+}
+
+type VoiceRoomListRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Rooms         []*VoiceRoomItem       `protobuf:"bytes,1,rep,name=rooms,proto3" json:"rooms,omitempty"`
+	HasMore       bool                   `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomListRes) Reset() {
+	*x = VoiceRoomListRes{}
+	mi := &file_rtc_client_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomListRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomListRes) ProtoMessage() {}
+
+func (x *VoiceRoomListRes) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomListRes.ProtoReflect.Descriptor instead.
+func (*VoiceRoomListRes) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *VoiceRoomListRes) GetRooms() []*VoiceRoomItem {
+	if x != nil {
+		return x.Rooms
+	}
+	return nil
+}
+
+func (x *VoiceRoomListRes) GetHasMore() bool {
+	if x != nil {
+		return x.HasMore
+	}
+	return false
+}
+
+// 1810 加入语音房（密码房校验密码；返回进房 token）。
+type VoiceRoomJoinReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomJoinReq) Reset() {
+	*x = VoiceRoomJoinReq{}
+	mi := &file_rtc_client_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomJoinReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomJoinReq) ProtoMessage() {}
+
+func (x *VoiceRoomJoinReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomJoinReq.ProtoReflect.Descriptor instead.
+func (*VoiceRoomJoinReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *VoiceRoomJoinReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *VoiceRoomJoinReq) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+type VoiceRoomJoinRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
+	SfuUrl        string                 `protobuf:"bytes,3,opt,name=sfu_url,json=sfuUrl,proto3" json:"sfu_url,omitempty"`
+	ExpireAt      int64                  `protobuf:"varint,4,opt,name=expire_at,json=expireAt,proto3" json:"expire_at,omitempty"`
+	Seats         []*SeatState           `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomJoinRes) Reset() {
+	*x = VoiceRoomJoinRes{}
+	mi := &file_rtc_client_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomJoinRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomJoinRes) ProtoMessage() {}
+
+func (x *VoiceRoomJoinRes) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomJoinRes.ProtoReflect.Descriptor instead.
+func (*VoiceRoomJoinRes) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *VoiceRoomJoinRes) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *VoiceRoomJoinRes) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *VoiceRoomJoinRes) GetSfuUrl() string {
+	if x != nil {
+		return x.SfuUrl
+	}
+	return ""
+}
+
+func (x *VoiceRoomJoinRes) GetExpireAt() int64 {
+	if x != nil {
+		return x.ExpireAt
+	}
+	return 0
+}
+
+func (x *VoiceRoomJoinRes) GetSeats() []*SeatState {
+	if x != nil {
+		return x.Seats
+	}
+	return nil
+}
+
+// 1811 token 续期（剩余 5 分钟时调用；服务端复核未被踢/拉黑）。
+type VoiceRoomRefreshTokenReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomRefreshTokenReq) Reset() {
+	*x = VoiceRoomRefreshTokenReq{}
+	mi := &file_rtc_client_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomRefreshTokenReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomRefreshTokenReq) ProtoMessage() {}
+
+func (x *VoiceRoomRefreshTokenReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomRefreshTokenReq.ProtoReflect.Descriptor instead.
+func (*VoiceRoomRefreshTokenReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *VoiceRoomRefreshTokenReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+type VoiceRoomRefreshTokenRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	ExpireAt      int64                  `protobuf:"varint,2,opt,name=expire_at,json=expireAt,proto3" json:"expire_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomRefreshTokenRes) Reset() {
+	*x = VoiceRoomRefreshTokenRes{}
+	mi := &file_rtc_client_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomRefreshTokenRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomRefreshTokenRes) ProtoMessage() {}
+
+func (x *VoiceRoomRefreshTokenRes) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomRefreshTokenRes.ProtoReflect.Descriptor instead.
+func (*VoiceRoomRefreshTokenRes) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *VoiceRoomRefreshTokenRes) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *VoiceRoomRefreshTokenRes) GetExpireAt() int64 {
+	if x != nil {
+		return x.ExpireAt
+	}
+	return 0
+}
+
+// SeatState 是麦位快照：status 0 EMPTY / 1 OCCUPIED_SPEAKING
+// 2 OCCUPIED_SELF_MUTED / 3 OCCUPIED_FORCE_MUTED / 4 LOCKED / 5 RECONNECTING。
+type SeatState struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SeatIndex     int32                  `protobuf:"varint,1,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	Uid           int64                  `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"`
+	Status        int32                  `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SeatState) Reset() {
+	*x = SeatState{}
+	mi := &file_rtc_client_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SeatState) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SeatState) ProtoMessage() {}
+
+func (x *SeatState) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SeatState.ProtoReflect.Descriptor instead.
+func (*SeatState) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *SeatState) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *SeatState) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *SeatState) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+// 1812 上麦（自由上麦模式）。
+type TakeSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	SeatIndex     int32                  `protobuf:"varint,2,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TakeSeatReq) Reset() {
+	*x = TakeSeatReq{}
+	mi := &file_rtc_client_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TakeSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TakeSeatReq) ProtoMessage() {}
+
+func (x *TakeSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TakeSeatReq.ProtoReflect.Descriptor instead.
+func (*TakeSeatReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *TakeSeatReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *TakeSeatReq) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+// 1813 下麦。
+type LeaveSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LeaveSeatReq) Reset() {
+	*x = LeaveSeatReq{}
+	mi := &file_rtc_client_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LeaveSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaveSeatReq) ProtoMessage() {}
+
+func (x *LeaveSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaveSeatReq.ProtoReflect.Descriptor instead.
+func (*LeaveSeatReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *LeaveSeatReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+// 1814 踢下麦（房主/管理员）。
+type KickSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	SeatIndex     int32                  `protobuf:"varint,2,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	Uid           int64                  `protobuf:"varint,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KickSeatReq) Reset() {
+	*x = KickSeatReq{}
+	mi := &file_rtc_client_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KickSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KickSeatReq) ProtoMessage() {}
+
+func (x *KickSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KickSeatReq.ProtoReflect.Descriptor instead.
+func (*KickSeatReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *KickSeatReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *KickSeatReq) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *KickSeatReq) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+// 1815 强制闭麦/解除（服务端同步 LiveKit CanPublish）。
+type ForceMuteSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	SeatIndex     int32                  `protobuf:"varint,2,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	Muted         bool                   `protobuf:"varint,3,opt,name=muted,proto3" json:"muted,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ForceMuteSeatReq) Reset() {
+	*x = ForceMuteSeatReq{}
+	mi := &file_rtc_client_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ForceMuteSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ForceMuteSeatReq) ProtoMessage() {}
+
+func (x *ForceMuteSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ForceMuteSeatReq.ProtoReflect.Descriptor instead.
+func (*ForceMuteSeatReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ForceMuteSeatReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *ForceMuteSeatReq) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *ForceMuteSeatReq) GetMuted() bool {
+	if x != nil {
+		return x.Muted
+	}
+	return false
+}
+
+// 1816 锁麦/解锁。
+type LockSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	SeatIndex     int32                  `protobuf:"varint,2,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	Locked        bool                   `protobuf:"varint,3,opt,name=locked,proto3" json:"locked,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LockSeatReq) Reset() {
+	*x = LockSeatReq{}
+	mi := &file_rtc_client_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LockSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LockSeatReq) ProtoMessage() {}
+
+func (x *LockSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LockSeatReq.ProtoReflect.Descriptor instead.
+func (*LockSeatReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *LockSeatReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *LockSeatReq) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *LockSeatReq) GetLocked() bool {
+	if x != nil {
+		return x.Locked
+	}
+	return false
+}
+
+// 1817 举手（举手审批模式）。
+type HandUpReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HandUpReq) Reset() {
+	*x = HandUpReq{}
+	mi := &file_rtc_client_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HandUpReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HandUpReq) ProtoMessage() {}
+
+func (x *HandUpReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HandUpReq.ProtoReflect.Descriptor instead.
+func (*HandUpReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *HandUpReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+// 1818 审批举手。
+type ApproveHandUpReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Uid           int64                  `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"`
+	SeatIndex     int32                  `protobuf:"varint,3,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	Accept        bool                   `protobuf:"varint,4,opt,name=accept,proto3" json:"accept,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApproveHandUpReq) Reset() {
+	*x = ApproveHandUpReq{}
+	mi := &file_rtc_client_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApproveHandUpReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApproveHandUpReq) ProtoMessage() {}
+
+func (x *ApproveHandUpReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApproveHandUpReq.ProtoReflect.Descriptor instead.
+func (*ApproveHandUpReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *ApproveHandUpReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *ApproveHandUpReq) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *ApproveHandUpReq) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *ApproveHandUpReq) GetAccept() bool {
+	if x != nil {
+		return x.Accept
+	}
+	return false
+}
+
+// 1819 邀请上麦。
+type InviteToSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Uid           int64                  `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"`
+	SeatIndex     int32                  `protobuf:"varint,3,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InviteToSeatReq) Reset() {
+	*x = InviteToSeatReq{}
+	mi := &file_rtc_client_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InviteToSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InviteToSeatReq) ProtoMessage() {}
+
+func (x *InviteToSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InviteToSeatReq.ProtoReflect.Descriptor instead.
+func (*InviteToSeatReq) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *InviteToSeatReq) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *InviteToSeatReq) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *InviteToSeatReq) GetSeatIndex() int32 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+// 麦位操作通用响应。
+type SeatOperationRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ok            bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	Seats         []*SeatState           `protobuf:"bytes,2,rep,name=seats,proto3" json:"seats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SeatOperationRes) Reset() {
+	*x = SeatOperationRes{}
+	mi := &file_rtc_client_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SeatOperationRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SeatOperationRes) ProtoMessage() {}
+
+func (x *SeatOperationRes) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SeatOperationRes.ProtoReflect.Descriptor instead.
+func (*SeatOperationRes) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *SeatOperationRes) GetOk() bool {
+	if x != nil {
+		return x.Ok
+	}
+	return false
+}
+
+func (x *SeatOperationRes) GetSeats() []*SeatState {
+	if x != nil {
+		return x.Seats
+	}
+	return nil
+}
+
+// 1912 麦位更新推送（seq=0）。
+type SeatUpdatePush struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Seats         []*SeatState           `protobuf:"bytes,2,rep,name=seats,proto3" json:"seats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SeatUpdatePush) Reset() {
+	*x = SeatUpdatePush{}
+	mi := &file_rtc_client_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SeatUpdatePush) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SeatUpdatePush) ProtoMessage() {}
+
+func (x *SeatUpdatePush) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SeatUpdatePush.ProtoReflect.Descriptor instead.
+func (*SeatUpdatePush) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *SeatUpdatePush) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *SeatUpdatePush) GetSeats() []*SeatState {
+	if x != nil {
+		return x.Seats
+	}
+	return nil
+}
+
+// 1913 语音房关闭推送（seq=0）。
+type VoiceRoomClosedPush struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Reason        int32                  `protobuf:"varint,2,opt,name=reason,proto3" json:"reason,omitempty"` // 1 empty timeout / 2 owner closed / 3 admin forced
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoiceRoomClosedPush) Reset() {
+	*x = VoiceRoomClosedPush{}
+	mi := &file_rtc_client_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomClosedPush) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomClosedPush) ProtoMessage() {}
+
+func (x *VoiceRoomClosedPush) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomClosedPush.ProtoReflect.Descriptor instead.
+func (*VoiceRoomClosedPush) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *VoiceRoomClosedPush) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *VoiceRoomClosedPush) GetReason() int32 {
+	if x != nil {
+		return x.Reason
+	}
+	return 0
+}
+
+// 1914 礼物/打赏特效广播（seq=0）。single >= 50 USDT 全屏特效。
+type VoiceRoomGiftPush struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	RoomId             string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	SenderUid          int64                  `protobuf:"varint,2,opt,name=sender_uid,json=senderUid,proto3" json:"sender_uid,omitempty"`
+	ReceiverUid        int64                  `protobuf:"varint,3,opt,name=receiver_uid,json=receiverUid,proto3" json:"receiver_uid,omitempty"`
+	GiftId             int32                  `protobuf:"varint,4,opt,name=gift_id,json=giftId,proto3" json:"gift_id,omitempty"`
+	GiftCount          int32                  `protobuf:"varint,5,opt,name=gift_count,json=giftCount,proto3" json:"gift_count,omitempty"`
+	ComboId            string                 `protobuf:"bytes,6,opt,name=combo_id,json=comboId,proto3" json:"combo_id,omitempty"`
+	ComboCount         int32                  `protobuf:"varint,7,opt,name=combo_count,json=comboCount,proto3" json:"combo_count,omitempty"`
+	Amount             int64                  `protobuf:"varint,8,opt,name=amount,proto3" json:"amount,omitempty"` // micro USDT
+	IsFullscreenEffect bool                   `protobuf:"varint,9,opt,name=is_fullscreen_effect,json=isFullscreenEffect,proto3" json:"is_fullscreen_effect,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *VoiceRoomGiftPush) Reset() {
+	*x = VoiceRoomGiftPush{}
+	mi := &file_rtc_client_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoiceRoomGiftPush) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoiceRoomGiftPush) ProtoMessage() {}
+
+func (x *VoiceRoomGiftPush) ProtoReflect() protoreflect.Message {
+	mi := &file_rtc_client_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoiceRoomGiftPush.ProtoReflect.Descriptor instead.
+func (*VoiceRoomGiftPush) Descriptor() ([]byte, []int) {
+	return file_rtc_client_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *VoiceRoomGiftPush) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *VoiceRoomGiftPush) GetSenderUid() int64 {
+	if x != nil {
+		return x.SenderUid
+	}
+	return 0
+}
+
+func (x *VoiceRoomGiftPush) GetReceiverUid() int64 {
+	if x != nil {
+		return x.ReceiverUid
+	}
+	return 0
+}
+
+func (x *VoiceRoomGiftPush) GetGiftId() int32 {
+	if x != nil {
+		return x.GiftId
+	}
+	return 0
+}
+
+func (x *VoiceRoomGiftPush) GetGiftCount() int32 {
+	if x != nil {
+		return x.GiftCount
+	}
+	return 0
+}
+
+func (x *VoiceRoomGiftPush) GetComboId() string {
+	if x != nil {
+		return x.ComboId
+	}
+	return ""
+}
+
+func (x *VoiceRoomGiftPush) GetComboCount() int32 {
+	if x != nil {
+		return x.ComboCount
+	}
+	return 0
+}
+
+func (x *VoiceRoomGiftPush) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *VoiceRoomGiftPush) GetIsFullscreenEffect() bool {
+	if x != nil {
+		return x.IsFullscreenEffect
+	}
+	return false
+}
+
 var File_rtc_client_proto protoreflect.FileDescriptor
 
 const file_rtc_client_proto_rawDesc = "" +
@@ -1385,7 +2803,119 @@ const file_rtc_client_proto_rawDesc = "" +
 	"\anetwork\x18\x05 \x01(\x05R\anetwork\x12\x17\n" +
 	"\aack_seq\x18\x06 \x01(\x03R\x06ackSeq\".\n" +
 	"\x13ParticipantStateRes\x12\x17\n" +
-	"\acall_id\x18\x01 \x01(\tR\x06callIdB6Z4github.com/zciyuan/ZIM/internal/protocol/rtc;rtcwireb\x06proto3"
+	"\acall_id\x18\x01 \x01(\tR\x06callId\"\xc3\x01\n" +
+	"\x12VoiceRoomCreateReq\x12\x1b\n" +
+	"\troom_type\x18\x01 \x01(\x05R\broomType\x12\x19\n" +
+	"\bgroup_id\x18\x02 \x01(\x03R\agroupId\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x1a\n" +
+	"\bpassword\x18\x04 \x01(\tR\bpassword\x12\x1d\n" +
+	"\n" +
+	"seat_count\x18\x05 \x01(\x05R\tseatCount\x12$\n" +
+	"\x0ejoin_seat_mode\x18\x06 \x01(\x05R\fjoinSeatMode\"\xa9\x02\n" +
+	"\x12VoiceRoomCreateRes\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1b\n" +
+	"\troom_type\x18\x02 \x01(\x05R\broomType\x12\x19\n" +
+	"\bgroup_id\x18\x03 \x01(\x03R\agroupId\x12\x1b\n" +
+	"\towner_uid\x18\x04 \x01(\x03R\bownerUid\x12\x14\n" +
+	"\x05title\x18\x05 \x01(\tR\x05title\x12\x1d\n" +
+	"\n" +
+	"seat_count\x18\x06 \x01(\x05R\tseatCount\x12$\n" +
+	"\x0ejoin_seat_mode\x18\a \x01(\x05R\fjoinSeatMode\x12\x14\n" +
+	"\x05token\x18\b \x01(\tR\x05token\x12\x17\n" +
+	"\asfu_url\x18\t \x01(\tR\x06sfuUrl\x12\x1b\n" +
+	"\texpire_at\x18\n" +
+	" \x01(\x03R\bexpireAt\"[\n" +
+	"\x10VoiceRoomListReq\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\x03R\agroupId\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"\xd5\x01\n" +
+	"\rVoiceRoomItem\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1b\n" +
+	"\troom_type\x18\x02 \x01(\x05R\broomType\x12\x19\n" +
+	"\bgroup_id\x18\x03 \x01(\x03R\agroupId\x12\x1b\n" +
+	"\towner_uid\x18\x04 \x01(\x03R\bownerUid\x12\x14\n" +
+	"\x05title\x18\x05 \x01(\tR\x05title\x12!\n" +
+	"\fonline_count\x18\x06 \x01(\x05R\vonlineCount\x12\x1d\n" +
+	"\n" +
+	"seat_count\x18\a \x01(\x05R\tseatCount\"[\n" +
+	"\x10VoiceRoomListRes\x12,\n" +
+	"\x05rooms\x18\x01 \x03(\v2\x16.zim.rtc.VoiceRoomItemR\x05rooms\x12\x19\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"G\n" +
+	"\x10VoiceRoomJoinReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xa1\x01\n" +
+	"\x10VoiceRoomJoinRes\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x14\n" +
+	"\x05token\x18\x02 \x01(\tR\x05token\x12\x17\n" +
+	"\asfu_url\x18\x03 \x01(\tR\x06sfuUrl\x12\x1b\n" +
+	"\texpire_at\x18\x04 \x01(\x03R\bexpireAt\x12(\n" +
+	"\x05seats\x18\x05 \x03(\v2\x12.zim.rtc.SeatStateR\x05seats\"3\n" +
+	"\x18VoiceRoomRefreshTokenReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\"M\n" +
+	"\x18VoiceRoomRefreshTokenRes\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1b\n" +
+	"\texpire_at\x18\x02 \x01(\x03R\bexpireAt\"T\n" +
+	"\tSeatState\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x01 \x01(\x05R\tseatIndex\x12\x10\n" +
+	"\x03uid\x18\x02 \x01(\x03R\x03uid\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\x05R\x06status\"E\n" +
+	"\vTakeSeatReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x02 \x01(\x05R\tseatIndex\"'\n" +
+	"\fLeaveSeatReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\"W\n" +
+	"\vKickSeatReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x02 \x01(\x05R\tseatIndex\x12\x10\n" +
+	"\x03uid\x18\x03 \x01(\x03R\x03uid\"`\n" +
+	"\x10ForceMuteSeatReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x02 \x01(\x05R\tseatIndex\x12\x14\n" +
+	"\x05muted\x18\x03 \x01(\bR\x05muted\"]\n" +
+	"\vLockSeatReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x02 \x01(\x05R\tseatIndex\x12\x16\n" +
+	"\x06locked\x18\x03 \x01(\bR\x06locked\"$\n" +
+	"\tHandUpReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\"t\n" +
+	"\x10ApproveHandUpReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x10\n" +
+	"\x03uid\x18\x02 \x01(\x03R\x03uid\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x03 \x01(\x05R\tseatIndex\x12\x16\n" +
+	"\x06accept\x18\x04 \x01(\bR\x06accept\"[\n" +
+	"\x0fInviteToSeatReq\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x10\n" +
+	"\x03uid\x18\x02 \x01(\x03R\x03uid\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\x03 \x01(\x05R\tseatIndex\"L\n" +
+	"\x10SeatOperationRes\x12\x0e\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok\x12(\n" +
+	"\x05seats\x18\x02 \x03(\v2\x12.zim.rtc.SeatStateR\x05seats\"S\n" +
+	"\x0eSeatUpdatePush\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12(\n" +
+	"\x05seats\x18\x02 \x03(\v2\x12.zim.rtc.SeatStateR\x05seats\"F\n" +
+	"\x13VoiceRoomClosedPush\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\x05R\x06reason\"\xac\x02\n" +
+	"\x11VoiceRoomGiftPush\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1d\n" +
+	"\n" +
+	"sender_uid\x18\x02 \x01(\x03R\tsenderUid\x12!\n" +
+	"\freceiver_uid\x18\x03 \x01(\x03R\vreceiverUid\x12\x17\n" +
+	"\agift_id\x18\x04 \x01(\x05R\x06giftId\x12\x1d\n" +
+	"\n" +
+	"gift_count\x18\x05 \x01(\x05R\tgiftCount\x12\x19\n" +
+	"\bcombo_id\x18\x06 \x01(\tR\acomboId\x12\x1f\n" +
+	"\vcombo_count\x18\a \x01(\x05R\n" +
+	"comboCount\x12\x16\n" +
+	"\x06amount\x18\b \x01(\x03R\x06amount\x120\n" +
+	"\x14is_fullscreen_effect\x18\t \x01(\bR\x12isFullscreenEffectB6Z4github.com/zciyuan/ZIM/internal/protocol/rtc;rtcwireb\x06proto3"
 
 var (
 	file_rtc_client_proto_rawDescOnce sync.Once
@@ -1399,33 +2929,59 @@ func file_rtc_client_proto_rawDescGZIP() []byte {
 	return file_rtc_client_proto_rawDescData
 }
 
-var file_rtc_client_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_rtc_client_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_rtc_client_proto_goTypes = []any{
-	(*CallTarget)(nil),          // 0: zim.rtc.CallTarget
-	(*CallInviteReq)(nil),       // 1: zim.rtc.CallInviteReq
-	(*CallInviteRes)(nil),       // 2: zim.rtc.CallInviteRes
-	(*CallAnswerReq)(nil),       // 3: zim.rtc.CallAnswerReq
-	(*CallAnswerRes)(nil),       // 4: zim.rtc.CallAnswerRes
-	(*CallHangupReq)(nil),       // 5: zim.rtc.CallHangupReq
-	(*CallHangupRes)(nil),       // 6: zim.rtc.CallHangupRes
-	(*CallCancelReq)(nil),       // 7: zim.rtc.CallCancelReq
-	(*CallCancelRes)(nil),       // 8: zim.rtc.CallCancelRes
-	(*CallStateReq)(nil),        // 9: zim.rtc.CallStateReq
-	(*CallStateRes)(nil),        // 10: zim.rtc.CallStateRes
-	(*CallEvent)(nil),           // 11: zim.rtc.CallEvent
-	(*RoomTokenReq)(nil),        // 12: zim.rtc.RoomTokenReq
-	(*RoomTokenRes)(nil),        // 13: zim.rtc.RoomTokenRes
-	(*ParticipantStateReq)(nil), // 14: zim.rtc.ParticipantStateReq
-	(*ParticipantStateRes)(nil), // 15: zim.rtc.ParticipantStateRes
+	(*CallTarget)(nil),               // 0: zim.rtc.CallTarget
+	(*CallInviteReq)(nil),            // 1: zim.rtc.CallInviteReq
+	(*CallInviteRes)(nil),            // 2: zim.rtc.CallInviteRes
+	(*CallAnswerReq)(nil),            // 3: zim.rtc.CallAnswerReq
+	(*CallAnswerRes)(nil),            // 4: zim.rtc.CallAnswerRes
+	(*CallHangupReq)(nil),            // 5: zim.rtc.CallHangupReq
+	(*CallHangupRes)(nil),            // 6: zim.rtc.CallHangupRes
+	(*CallCancelReq)(nil),            // 7: zim.rtc.CallCancelReq
+	(*CallCancelRes)(nil),            // 8: zim.rtc.CallCancelRes
+	(*CallStateReq)(nil),             // 9: zim.rtc.CallStateReq
+	(*CallStateRes)(nil),             // 10: zim.rtc.CallStateRes
+	(*CallEvent)(nil),                // 11: zim.rtc.CallEvent
+	(*RoomTokenReq)(nil),             // 12: zim.rtc.RoomTokenReq
+	(*RoomTokenRes)(nil),             // 13: zim.rtc.RoomTokenRes
+	(*ParticipantStateReq)(nil),      // 14: zim.rtc.ParticipantStateReq
+	(*ParticipantStateRes)(nil),      // 15: zim.rtc.ParticipantStateRes
+	(*VoiceRoomCreateReq)(nil),       // 16: zim.rtc.VoiceRoomCreateReq
+	(*VoiceRoomCreateRes)(nil),       // 17: zim.rtc.VoiceRoomCreateRes
+	(*VoiceRoomListReq)(nil),         // 18: zim.rtc.VoiceRoomListReq
+	(*VoiceRoomItem)(nil),            // 19: zim.rtc.VoiceRoomItem
+	(*VoiceRoomListRes)(nil),         // 20: zim.rtc.VoiceRoomListRes
+	(*VoiceRoomJoinReq)(nil),         // 21: zim.rtc.VoiceRoomJoinReq
+	(*VoiceRoomJoinRes)(nil),         // 22: zim.rtc.VoiceRoomJoinRes
+	(*VoiceRoomRefreshTokenReq)(nil), // 23: zim.rtc.VoiceRoomRefreshTokenReq
+	(*VoiceRoomRefreshTokenRes)(nil), // 24: zim.rtc.VoiceRoomRefreshTokenRes
+	(*SeatState)(nil),                // 25: zim.rtc.SeatState
+	(*TakeSeatReq)(nil),              // 26: zim.rtc.TakeSeatReq
+	(*LeaveSeatReq)(nil),             // 27: zim.rtc.LeaveSeatReq
+	(*KickSeatReq)(nil),              // 28: zim.rtc.KickSeatReq
+	(*ForceMuteSeatReq)(nil),         // 29: zim.rtc.ForceMuteSeatReq
+	(*LockSeatReq)(nil),              // 30: zim.rtc.LockSeatReq
+	(*HandUpReq)(nil),                // 31: zim.rtc.HandUpReq
+	(*ApproveHandUpReq)(nil),         // 32: zim.rtc.ApproveHandUpReq
+	(*InviteToSeatReq)(nil),          // 33: zim.rtc.InviteToSeatReq
+	(*SeatOperationRes)(nil),         // 34: zim.rtc.SeatOperationRes
+	(*SeatUpdatePush)(nil),           // 35: zim.rtc.SeatUpdatePush
+	(*VoiceRoomClosedPush)(nil),      // 36: zim.rtc.VoiceRoomClosedPush
+	(*VoiceRoomGiftPush)(nil),        // 37: zim.rtc.VoiceRoomGiftPush
 }
 var file_rtc_client_proto_depIdxs = []int32{
 	0,  // 0: zim.rtc.CallInviteReq.target:type_name -> zim.rtc.CallTarget
 	11, // 1: zim.rtc.CallStateRes.events:type_name -> zim.rtc.CallEvent
-	2,  // [2:2] is the sub-list for method output_type
-	2,  // [2:2] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	19, // 2: zim.rtc.VoiceRoomListRes.rooms:type_name -> zim.rtc.VoiceRoomItem
+	25, // 3: zim.rtc.VoiceRoomJoinRes.seats:type_name -> zim.rtc.SeatState
+	25, // 4: zim.rtc.SeatOperationRes.seats:type_name -> zim.rtc.SeatState
+	25, // 5: zim.rtc.SeatUpdatePush.seats:type_name -> zim.rtc.SeatState
+	6,  // [6:6] is the sub-list for method output_type
+	6,  // [6:6] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_rtc_client_proto_init() }
@@ -1439,7 +2995,7 @@ func file_rtc_client_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rtc_client_proto_rawDesc), len(file_rtc_client_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
