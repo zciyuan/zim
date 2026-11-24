@@ -27,7 +27,8 @@ const (
 // Default is the default target.
 var Default = Build
 
-// Services is the single source of truth for the 11 IM binaries (ADR-0002).
+// Services is the single source of truth for the 13 IM binaries
+// (ADR-0002, ADR-0043 added wallet/voiceroom).
 var Services = []string{
 	"zim-gate",
 	"zim-node-msg",
@@ -36,13 +37,15 @@ var Services = []string{
 	"zim-mesh-user",
 	"zim-mesh-relation",
 	"zim-mesh-group",
+	"zim-wallet",
+	"zim-voiceroom",
 	"zim-transfer",
 	"zim-push",
 	"zim-api",
 	"zim-crontask",
 }
 
-// Build compiles all 11 services. mage v1.17 does not support variadic
+// Build compiles all 13 services. mage v1.17 does not support variadic
 // targets, so a single service is built with BuildService.
 func Build() error {
 	return buildServices(Services)
@@ -151,6 +154,18 @@ func Generate() error {
 	if err := sh.RunV("protoc",
 		"--go_out=internal/protocol/rtc", "--go_opt=paths=source_relative",
 		"-I", "internal/protocol/rtc", "internal/protocol/rtc/rtc_client.proto",
+	); err != nil {
+		return err
+	}
+	if err := sh.RunV("protoc",
+		"--go_out=internal/protocol/message", "--go_opt=paths=source_relative",
+		"-I", "internal/protocol/message", "internal/protocol/message/message.proto",
+	); err != nil {
+		return err
+	}
+	if err := sh.RunV("protoc",
+		"--go_out=internal/protocol/group", "--go_opt=paths=source_relative",
+		"-I", "internal/protocol/group", "internal/protocol/group/group_client.proto",
 	); err != nil {
 		return err
 	}
