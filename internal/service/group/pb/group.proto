@@ -168,9 +168,38 @@ message GetMembershipArgs {
   int64 user_id = 2;
 }
 
+// SecurityState carries the mute/security facts the message path needs
+// (ADR-0043). It is returned as part of GetMembershipReply.
+message SecurityState {
+  bool  mute_all = 1;
+  int32 default_mute_flags = 2;
+  bool  scheduled_mute_active = 3;
+  bool  is_whitelist = 4;
+  int32 member_mute_flags = 5;
+  int64 member_mute_until = 6; // ms; 0 = not muted, -1 = permanent
+  int64 new_member_until = 7;  // ms; 0 = protection over
+  bool  anti_screenshot = 8;
+  bool  watermark_enable = 9;
+  int32 screenshot_penalty = 10; // 0 WARN / 1 MUTE_24H / 2 KICK
+  bool  anti_spam_enable = 11;
+  int32 anti_spam_window_sec = 12;
+  int32 anti_spam_max_msgs = 13;
+  int32 sensitive_auto_mute_s = 14;
+}
+
+// GetSecurityArgs fetches the full security settings of a group (ADR-0043).
+message GetSecurityArgs {
+  int64 group_id = 1;
+}
+
+message GetSecurityReply {
+  SecurityState security = 1;
+}
+
 message GetMembershipReply {
   GroupInfo group = 1;
   Membership member = 2;
+  SecurityState security = 3;
 }
 
 message MemberIDsArgs {
@@ -179,6 +208,53 @@ message MemberIDsArgs {
 
 message MemberIDsReply {
   repeated int64 user_ids = 1;
+}
+
+// SetGroupSecurityArgs configures scheduled mute / mute-all / DLP (ADR-0043,
+// op:1318). Zero-value fields keep the current setting; a dedicated clear flag
+// pattern is avoided by using the same values as the DDL defaults.
+message SetGroupSecurityArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  bool  mute_all = 3;
+  bool  scheduled_mute_enable = 4;
+  string scheduled_mute_start = 5; // HH:MM
+  string scheduled_mute_end = 6;   // HH:MM
+  string scheduled_timezone = 7;   // IANA
+  int32 default_mute_flags = 8;
+  int32 new_member_mute_sec = 9;
+  bool  anti_spam_enable = 10;
+  int32 anti_spam_window_sec = 11;
+  int32 anti_spam_max_msgs = 12;
+  int32 sensitive_auto_mute_s = 13;
+  bool  anti_screenshot = 14;
+  bool  watermark_enable = 15;
+  int32 screenshot_penalty = 16; // 0 WARN / 1 MUTE_24H / 2 KICK
+}
+
+message SecuritySettingsReply {
+  SecurityState security = 1;
+}
+
+// SetMemberRestrictionArgs sets category mute flags or whitelist for one
+// member (ADR-0043, op:1319).
+message SetMemberRestrictionArgs {
+  int64 group_id = 1;
+  int64 operator_id = 2;
+  int64 user_id = 3;
+  int32 mute_flags = 4;
+  bool  is_whitelist = 5;
+  int64 mute_until = 6; // ms; 0 = clear, -1 = permanent
+}
+
+// RecordDLPEventArgs appends a screenshot/record audit row (ADR-0043).
+message RecordDLPEventArgs {
+  string conv_id = 1;
+  int32  conv_type = 2; // 1 single / 2 group
+  int64  uid = 3;
+  int32  event_type = 4; // 1 screenshot / 2 screen record start
+  string device_info = 5;
+  int32  action_taken = 6; // 0 none / 1 warn / 2 mute_24h / 3 kick
 }
 
 message OperationReply {
@@ -205,4 +281,8 @@ service Group {
   rpc MuteAll(MuteAllArgs) returns (OperationReply);
   rpc GetMembership(GetMembershipArgs) returns (GetMembershipReply);
   rpc MemberIDs(MemberIDsArgs) returns (MemberIDsReply);
+  rpc SetGroupSecurity(SetGroupSecurityArgs) returns (SecuritySettingsReply);
+  rpc SetMemberRestriction(SetMemberRestrictionArgs) returns (OperationReply);
+  rpc RecordDLPEvent(RecordDLPEventArgs) returns (OperationReply);
+  rpc GetSecurity(GetSecurityArgs) returns (GetSecurityReply);
 }

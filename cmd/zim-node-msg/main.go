@@ -106,6 +106,10 @@ func main() {
 		indexCancel()
 		log.Fatalf("ensure message indexes failed: %v", err)
 	}
+	if err = messageDAO.EnsureBurnIndexes(indexCtx); err != nil {
+		indexCancel()
+		log.Fatalf("ensure burn indexes failed: %v", err)
+	}
 	indexCancel()
 
 	component := node.NewNode(
@@ -128,7 +132,9 @@ func main() {
 	messageService.WithSensitiveFilter(sensitiveService)
 	messageService.WithWebhook(webhook.NewWithDLQ(etc.Get("etc.zim.webhook.url", "").String(), etc.Get("etc.zim.webhook.secret", "").String(), webhookdao.New(database.Pool())))
 	var pipeline *messagesvc.Pipeline
-	if brokers := etc.Get("etc.zim.pipe.brokers", []string{}).Strings(); len(brokers) > 0 && !etc.Get("etc.zim.degrade.kafka", false).Bool() {
+	var dlpAudit logic.DLPAuditPublisher
+	brokers := etc.Get("etc.zim.pipe.brokers", []string{}).Strings()
+	if len(brokers) > 0 && !etc.Get("etc.zim.degrade.kafka", false).Bool() {
 		pipeline, err = messagesvc.NewPipeline(
 			messageService,
 			pipe.NewKafkaProducer(brokers),
@@ -138,6 +144,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("create message pipeline failed: %v", err)
 		}
+		dlpAudit = logic.NewKafkaDLPAuditPublisher(pipe.NewKafkaProducer(brokers))
 		log.Infof("message Kafka pipeline enabled: brokers = %v", brokers)
 	} else {
 		log.Warn("message Kafka pipeline disabled: fallback to synchronous writes")
@@ -150,7 +157,7 @@ func main() {
 		deviceService,
 	)
 
-	app.Init(component.Proxy(), messageService, pipeline, conversationService, changeLog, groupRead, rtcCalls, rtcProvider, rtcClientURL, familyService, connRegistry, syncService, deviceService, deviceIndex, reactionService)
+	app.Init(component.Proxy(), messageService, pipeline, conversationService, changeLog, groupRead, rtcCalls, rtcProvider, rtcClientURL, familyService, connRegistry, syncService, deviceService, deviceIndex, reactionService, cache.Client(), dlpAudit)
 	component.Proxy().SetDefaultRouteHandler(func(ctx node.Context) {
 		log.Warnf("unhandled node route: cid = %d, route = %d", ctx.CID(), ctx.Route())
 	})

@@ -113,10 +113,11 @@ func (q *PubSubResultQueue) consume() {
 			continue
 		}
 		result := &SendResult{
-			ServerMsgID: event.ServerMsgID,
-			Seq:         event.Seq,
-			SendTime:    event.SendTime,
-			Duplicate:   event.Duplicate,
+			ServerMsgID:  event.ServerMsgID,
+			Seq:          event.Seq,
+			SendTime:     event.SendTime,
+			Duplicate:    event.Duplicate,
+			BurnExpireAt: event.BurnExpireAt,
 		}
 		select {
 		case waiter <- result:

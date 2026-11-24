@@ -1447,6 +1447,242 @@ func (x *GroupOperationRes) GetOk() bool {
 	return false
 }
 
+// 1318 群安全设置：定时全员禁言/全员禁言/防截屏/水印/惩罚策略（ADR-0043）。
+type SetGroupSecurityReq struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	GroupId             string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	MuteAll             bool                   `protobuf:"varint,2,opt,name=mute_all,json=muteAll,proto3" json:"mute_all,omitempty"`
+	ScheduledMuteEnable bool                   `protobuf:"varint,3,opt,name=scheduled_mute_enable,json=scheduledMuteEnable,proto3" json:"scheduled_mute_enable,omitempty"`
+	ScheduledMuteStart  string                 `protobuf:"bytes,4,opt,name=scheduled_mute_start,json=scheduledMuteStart,proto3" json:"scheduled_mute_start,omitempty"` // HH:MM
+	ScheduledMuteEnd    string                 `protobuf:"bytes,5,opt,name=scheduled_mute_end,json=scheduledMuteEnd,proto3" json:"scheduled_mute_end,omitempty"`       // HH:MM
+	ScheduledTimezone   string                 `protobuf:"bytes,6,opt,name=scheduled_timezone,json=scheduledTimezone,proto3" json:"scheduled_timezone,omitempty"`      // IANA, e.g. Asia/Shanghai
+	DefaultMuteFlags    uint32                 `protobuf:"varint,7,opt,name=default_mute_flags,json=defaultMuteFlags,proto3" json:"default_mute_flags,omitempty"`
+	NewMemberMuteSec    int32                  `protobuf:"varint,8,opt,name=new_member_mute_sec,json=newMemberMuteSec,proto3" json:"new_member_mute_sec,omitempty"`
+	AntiSpamEnable      bool                   `protobuf:"varint,9,opt,name=anti_spam_enable,json=antiSpamEnable,proto3" json:"anti_spam_enable,omitempty"`
+	AntiSpamWindowSec   int32                  `protobuf:"varint,10,opt,name=anti_spam_window_sec,json=antiSpamWindowSec,proto3" json:"anti_spam_window_sec,omitempty"`
+	AntiSpamMaxMsgs     int32                  `protobuf:"varint,11,opt,name=anti_spam_max_msgs,json=antiSpamMaxMsgs,proto3" json:"anti_spam_max_msgs,omitempty"`
+	SensitiveAutoMuteS  int32                  `protobuf:"varint,12,opt,name=sensitive_auto_mute_s,json=sensitiveAutoMuteS,proto3" json:"sensitive_auto_mute_s,omitempty"`
+	AntiScreenshot      bool                   `protobuf:"varint,13,opt,name=anti_screenshot,json=antiScreenshot,proto3" json:"anti_screenshot,omitempty"`
+	WatermarkEnable     bool                   `protobuf:"varint,14,opt,name=watermark_enable,json=watermarkEnable,proto3" json:"watermark_enable,omitempty"`
+	ScreenshotPenalty   int32                  `protobuf:"varint,15,opt,name=screenshot_penalty,json=screenshotPenalty,proto3" json:"screenshot_penalty,omitempty"` // 0 WARN / 1 MUTE_24H / 2 KICK
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SetGroupSecurityReq) Reset() {
+	*x = SetGroupSecurityReq{}
+	mi := &file_group_client_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetGroupSecurityReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetGroupSecurityReq) ProtoMessage() {}
+
+func (x *SetGroupSecurityReq) ProtoReflect() protoreflect.Message {
+	mi := &file_group_client_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetGroupSecurityReq.ProtoReflect.Descriptor instead.
+func (*SetGroupSecurityReq) Descriptor() ([]byte, []int) {
+	return file_group_client_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SetGroupSecurityReq) GetGroupId() string {
+	if x != nil {
+		return x.GroupId
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityReq) GetMuteAll() bool {
+	if x != nil {
+		return x.MuteAll
+	}
+	return false
+}
+
+func (x *SetGroupSecurityReq) GetScheduledMuteEnable() bool {
+	if x != nil {
+		return x.ScheduledMuteEnable
+	}
+	return false
+}
+
+func (x *SetGroupSecurityReq) GetScheduledMuteStart() string {
+	if x != nil {
+		return x.ScheduledMuteStart
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityReq) GetScheduledMuteEnd() string {
+	if x != nil {
+		return x.ScheduledMuteEnd
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityReq) GetScheduledTimezone() string {
+	if x != nil {
+		return x.ScheduledTimezone
+	}
+	return ""
+}
+
+func (x *SetGroupSecurityReq) GetDefaultMuteFlags() uint32 {
+	if x != nil {
+		return x.DefaultMuteFlags
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityReq) GetNewMemberMuteSec() int32 {
+	if x != nil {
+		return x.NewMemberMuteSec
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityReq) GetAntiSpamEnable() bool {
+	if x != nil {
+		return x.AntiSpamEnable
+	}
+	return false
+}
+
+func (x *SetGroupSecurityReq) GetAntiSpamWindowSec() int32 {
+	if x != nil {
+		return x.AntiSpamWindowSec
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityReq) GetAntiSpamMaxMsgs() int32 {
+	if x != nil {
+		return x.AntiSpamMaxMsgs
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityReq) GetSensitiveAutoMuteS() int32 {
+	if x != nil {
+		return x.SensitiveAutoMuteS
+	}
+	return 0
+}
+
+func (x *SetGroupSecurityReq) GetAntiScreenshot() bool {
+	if x != nil {
+		return x.AntiScreenshot
+	}
+	return false
+}
+
+func (x *SetGroupSecurityReq) GetWatermarkEnable() bool {
+	if x != nil {
+		return x.WatermarkEnable
+	}
+	return false
+}
+
+func (x *SetGroupSecurityReq) GetScreenshotPenalty() int32 {
+	if x != nil {
+		return x.ScreenshotPenalty
+	}
+	return 0
+}
+
+// 1319 成员分类禁言位掩码 + 全员禁言白名单（ADR-0043）。
+// mute_flags: 1<<0 全禁言 1<<1 禁图片/视频 1<<2 禁外链 1<<3 禁名片
+// 1<<4 禁红包 1<<5 禁表情包 1<<6 禁改昵称 1<<7 禁 Reaction 1<<8 禁语音房发言。
+type SetMemberRestrictionReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	MuteFlags     uint32                 `protobuf:"varint,3,opt,name=mute_flags,json=muteFlags,proto3" json:"mute_flags,omitempty"`
+	IsWhitelist   bool                   `protobuf:"varint,4,opt,name=is_whitelist,json=isWhitelist,proto3" json:"is_whitelist,omitempty"`
+	MuteUntil     int64                  `protobuf:"varint,5,opt,name=mute_until,json=muteUntil,proto3" json:"mute_until,omitempty"` // ms; 0 = clear, -1 = permanent
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetMemberRestrictionReq) Reset() {
+	*x = SetMemberRestrictionReq{}
+	mi := &file_group_client_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetMemberRestrictionReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMemberRestrictionReq) ProtoMessage() {}
+
+func (x *SetMemberRestrictionReq) ProtoReflect() protoreflect.Message {
+	mi := &file_group_client_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMemberRestrictionReq.ProtoReflect.Descriptor instead.
+func (*SetMemberRestrictionReq) Descriptor() ([]byte, []int) {
+	return file_group_client_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *SetMemberRestrictionReq) GetGroupId() string {
+	if x != nil {
+		return x.GroupId
+	}
+	return ""
+}
+
+func (x *SetMemberRestrictionReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *SetMemberRestrictionReq) GetMuteFlags() uint32 {
+	if x != nil {
+		return x.MuteFlags
+	}
+	return 0
+}
+
+func (x *SetMemberRestrictionReq) GetIsWhitelist() bool {
+	if x != nil {
+		return x.IsWhitelist
+	}
+	return false
+}
+
+func (x *SetMemberRestrictionReq) GetMuteUntil() int64 {
+	if x != nil {
+		return x.MuteUntil
+	}
+	return 0
+}
+
 var File_group_client_proto protoreflect.FileDescriptor
 
 const file_group_client_proto_rawDesc = "" +
@@ -1551,7 +1787,32 @@ const file_group_client_proto_rawDesc = "" +
 	"\x0fDismissGroupReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"#\n" +
 	"\x11GroupOperationRes\x12\x0e\n" +
-	"\x02ok\x18\x01 \x01(\bR\x02okB:Z8github.com/zciyuan/ZIM/internal/protocol/group;groupwireb\x06proto3"
+	"\x02ok\x18\x01 \x01(\bR\x02ok\"\xa9\x05\n" +
+	"\x13SetGroupSecurityReq\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x19\n" +
+	"\bmute_all\x18\x02 \x01(\bR\amuteAll\x122\n" +
+	"\x15scheduled_mute_enable\x18\x03 \x01(\bR\x13scheduledMuteEnable\x120\n" +
+	"\x14scheduled_mute_start\x18\x04 \x01(\tR\x12scheduledMuteStart\x12,\n" +
+	"\x12scheduled_mute_end\x18\x05 \x01(\tR\x10scheduledMuteEnd\x12-\n" +
+	"\x12scheduled_timezone\x18\x06 \x01(\tR\x11scheduledTimezone\x12,\n" +
+	"\x12default_mute_flags\x18\a \x01(\rR\x10defaultMuteFlags\x12-\n" +
+	"\x13new_member_mute_sec\x18\b \x01(\x05R\x10newMemberMuteSec\x12(\n" +
+	"\x10anti_spam_enable\x18\t \x01(\bR\x0eantiSpamEnable\x12/\n" +
+	"\x14anti_spam_window_sec\x18\n" +
+	" \x01(\x05R\x11antiSpamWindowSec\x12+\n" +
+	"\x12anti_spam_max_msgs\x18\v \x01(\x05R\x0fantiSpamMaxMsgs\x121\n" +
+	"\x15sensitive_auto_mute_s\x18\f \x01(\x05R\x12sensitiveAutoMuteS\x12'\n" +
+	"\x0fanti_screenshot\x18\r \x01(\bR\x0eantiScreenshot\x12)\n" +
+	"\x10watermark_enable\x18\x0e \x01(\bR\x0fwatermarkEnable\x12-\n" +
+	"\x12screenshot_penalty\x18\x0f \x01(\x05R\x11screenshotPenalty\"\xae\x01\n" +
+	"\x17SetMemberRestrictionReq\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1d\n" +
+	"\n" +
+	"mute_flags\x18\x03 \x01(\rR\tmuteFlags\x12!\n" +
+	"\fis_whitelist\x18\x04 \x01(\bR\visWhitelist\x12\x1d\n" +
+	"\n" +
+	"mute_until\x18\x05 \x01(\x03R\tmuteUntilB:Z8github.com/zciyuan/ZIM/internal/protocol/group;groupwireb\x06proto3"
 
 var (
 	file_group_client_proto_rawDescOnce sync.Once
@@ -1565,32 +1826,34 @@ func file_group_client_proto_rawDescGZIP() []byte {
 	return file_group_client_proto_rawDescData
 }
 
-var file_group_client_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_group_client_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_group_client_proto_goTypes = []any{
-	(*GroupMember)(nil),           // 0: zim.group.GroupMember
-	(*CreateGroupReq)(nil),        // 1: zim.group.CreateGroupReq
-	(*CreateGroupRes)(nil),        // 2: zim.group.CreateGroupRes
-	(*SearchGroupReq)(nil),        // 3: zim.group.SearchGroupReq
-	(*GroupSummary)(nil),          // 4: zim.group.GroupSummary
-	(*SearchGroupRes)(nil),        // 5: zim.group.SearchGroupRes
-	(*GroupNotifyReq)(nil),        // 6: zim.group.GroupNotifyReq
-	(*SetGroupAdminReq)(nil),      // 7: zim.group.SetGroupAdminReq
-	(*MuteMemberReq)(nil),         // 8: zim.group.MuteMemberReq
-	(*MuteAllReq)(nil),            // 9: zim.group.MuteAllReq
-	(*MyGroupsReq)(nil),           // 10: zim.group.MyGroupsReq
-	(*MyGroupsRes)(nil),           // 11: zim.group.MyGroupsRes
-	(*ApplyJoinReq)(nil),          // 12: zim.group.ApplyJoinReq
-	(*AnswerJoinReq)(nil),         // 13: zim.group.AnswerJoinReq
-	(*UpdateGroupReq)(nil),        // 14: zim.group.UpdateGroupReq
-	(*UpdateGroupRes)(nil),        // 15: zim.group.UpdateGroupRes
-	(*TransferGroupReq)(nil),      // 16: zim.group.TransferGroupReq
-	(*GroupMembersReq)(nil),       // 17: zim.group.GroupMembersReq
-	(*GroupMembersRes)(nil),       // 18: zim.group.GroupMembersRes
-	(*InviteGroupMembersReq)(nil), // 19: zim.group.InviteGroupMembersReq
-	(*QuitGroupReq)(nil),          // 20: zim.group.QuitGroupReq
-	(*KickGroupMemberReq)(nil),    // 21: zim.group.KickGroupMemberReq
-	(*DismissGroupReq)(nil),       // 22: zim.group.DismissGroupReq
-	(*GroupOperationRes)(nil),     // 23: zim.group.GroupOperationRes
+	(*GroupMember)(nil),             // 0: zim.group.GroupMember
+	(*CreateGroupReq)(nil),          // 1: zim.group.CreateGroupReq
+	(*CreateGroupRes)(nil),          // 2: zim.group.CreateGroupRes
+	(*SearchGroupReq)(nil),          // 3: zim.group.SearchGroupReq
+	(*GroupSummary)(nil),            // 4: zim.group.GroupSummary
+	(*SearchGroupRes)(nil),          // 5: zim.group.SearchGroupRes
+	(*GroupNotifyReq)(nil),          // 6: zim.group.GroupNotifyReq
+	(*SetGroupAdminReq)(nil),        // 7: zim.group.SetGroupAdminReq
+	(*MuteMemberReq)(nil),           // 8: zim.group.MuteMemberReq
+	(*MuteAllReq)(nil),              // 9: zim.group.MuteAllReq
+	(*MyGroupsReq)(nil),             // 10: zim.group.MyGroupsReq
+	(*MyGroupsRes)(nil),             // 11: zim.group.MyGroupsRes
+	(*ApplyJoinReq)(nil),            // 12: zim.group.ApplyJoinReq
+	(*AnswerJoinReq)(nil),           // 13: zim.group.AnswerJoinReq
+	(*UpdateGroupReq)(nil),          // 14: zim.group.UpdateGroupReq
+	(*UpdateGroupRes)(nil),          // 15: zim.group.UpdateGroupRes
+	(*TransferGroupReq)(nil),        // 16: zim.group.TransferGroupReq
+	(*GroupMembersReq)(nil),         // 17: zim.group.GroupMembersReq
+	(*GroupMembersRes)(nil),         // 18: zim.group.GroupMembersRes
+	(*InviteGroupMembersReq)(nil),   // 19: zim.group.InviteGroupMembersReq
+	(*QuitGroupReq)(nil),            // 20: zim.group.QuitGroupReq
+	(*KickGroupMemberReq)(nil),      // 21: zim.group.KickGroupMemberReq
+	(*DismissGroupReq)(nil),         // 22: zim.group.DismissGroupReq
+	(*GroupOperationRes)(nil),       // 23: zim.group.GroupOperationRes
+	(*SetGroupSecurityReq)(nil),     // 24: zim.group.SetGroupSecurityReq
+	(*SetMemberRestrictionReq)(nil), // 25: zim.group.SetMemberRestrictionReq
 }
 var file_group_client_proto_depIdxs = []int32{
 	4, // 0: zim.group.SearchGroupRes.groups:type_name -> zim.group.GroupSummary
@@ -1613,7 +1876,7 @@ func file_group_client_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_group_client_proto_rawDesc), len(file_group_client_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

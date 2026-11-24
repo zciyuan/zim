@@ -19,25 +19,29 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Group_CreateGroup_FullMethodName   = "/zim.service.group.Group/CreateGroup"
-	Group_GetGroup_FullMethodName      = "/zim.service.group.Group/GetGroup"
-	Group_UpdateGroup_FullMethodName   = "/zim.service.group.Group/UpdateGroup"
-	Group_SearchGroups_FullMethodName  = "/zim.service.group.Group/SearchGroups"
-	Group_ListApplies_FullMethodName   = "/zim.service.group.Group/ListApplies"
-	Group_ApplyJoin_FullMethodName     = "/zim.service.group.Group/ApplyJoin"
-	Group_AnswerJoin_FullMethodName    = "/zim.service.group.Group/AnswerJoin"
-	Group_TransferGroup_FullMethodName = "/zim.service.group.Group/TransferGroup"
-	Group_DismissGroup_FullMethodName  = "/zim.service.group.Group/DismissGroup"
-	Group_QuitGroup_FullMethodName     = "/zim.service.group.Group/QuitGroup"
-	Group_InviteMembers_FullMethodName = "/zim.service.group.Group/InviteMembers"
-	Group_RemoveMember_FullMethodName  = "/zim.service.group.Group/RemoveMember"
-	Group_Members_FullMethodName       = "/zim.service.group.Group/Members"
-	Group_MyGroups_FullMethodName      = "/zim.service.group.Group/MyGroups"
-	Group_SetAdmin_FullMethodName      = "/zim.service.group.Group/SetAdmin"
-	Group_MuteMember_FullMethodName    = "/zim.service.group.Group/MuteMember"
-	Group_MuteAll_FullMethodName       = "/zim.service.group.Group/MuteAll"
-	Group_GetMembership_FullMethodName = "/zim.service.group.Group/GetMembership"
-	Group_MemberIDs_FullMethodName     = "/zim.service.group.Group/MemberIDs"
+	Group_CreateGroup_FullMethodName          = "/zim.service.group.Group/CreateGroup"
+	Group_GetGroup_FullMethodName             = "/zim.service.group.Group/GetGroup"
+	Group_UpdateGroup_FullMethodName          = "/zim.service.group.Group/UpdateGroup"
+	Group_SearchGroups_FullMethodName         = "/zim.service.group.Group/SearchGroups"
+	Group_ListApplies_FullMethodName          = "/zim.service.group.Group/ListApplies"
+	Group_ApplyJoin_FullMethodName            = "/zim.service.group.Group/ApplyJoin"
+	Group_AnswerJoin_FullMethodName           = "/zim.service.group.Group/AnswerJoin"
+	Group_TransferGroup_FullMethodName        = "/zim.service.group.Group/TransferGroup"
+	Group_DismissGroup_FullMethodName         = "/zim.service.group.Group/DismissGroup"
+	Group_QuitGroup_FullMethodName            = "/zim.service.group.Group/QuitGroup"
+	Group_InviteMembers_FullMethodName        = "/zim.service.group.Group/InviteMembers"
+	Group_RemoveMember_FullMethodName         = "/zim.service.group.Group/RemoveMember"
+	Group_Members_FullMethodName              = "/zim.service.group.Group/Members"
+	Group_MyGroups_FullMethodName             = "/zim.service.group.Group/MyGroups"
+	Group_SetAdmin_FullMethodName             = "/zim.service.group.Group/SetAdmin"
+	Group_MuteMember_FullMethodName           = "/zim.service.group.Group/MuteMember"
+	Group_MuteAll_FullMethodName              = "/zim.service.group.Group/MuteAll"
+	Group_GetMembership_FullMethodName        = "/zim.service.group.Group/GetMembership"
+	Group_MemberIDs_FullMethodName            = "/zim.service.group.Group/MemberIDs"
+	Group_SetGroupSecurity_FullMethodName     = "/zim.service.group.Group/SetGroupSecurity"
+	Group_SetMemberRestriction_FullMethodName = "/zim.service.group.Group/SetMemberRestriction"
+	Group_RecordDLPEvent_FullMethodName       = "/zim.service.group.Group/RecordDLPEvent"
+	Group_GetSecurity_FullMethodName          = "/zim.service.group.Group/GetSecurity"
 )
 
 // GroupClient is the client API for Group service.
@@ -63,6 +67,10 @@ type GroupClient interface {
 	MuteAll(ctx context.Context, in *MuteAllArgs, opts ...grpc.CallOption) (*OperationReply, error)
 	GetMembership(ctx context.Context, in *GetMembershipArgs, opts ...grpc.CallOption) (*GetMembershipReply, error)
 	MemberIDs(ctx context.Context, in *MemberIDsArgs, opts ...grpc.CallOption) (*MemberIDsReply, error)
+	SetGroupSecurity(ctx context.Context, in *SetGroupSecurityArgs, opts ...grpc.CallOption) (*SecuritySettingsReply, error)
+	SetMemberRestriction(ctx context.Context, in *SetMemberRestrictionArgs, opts ...grpc.CallOption) (*OperationReply, error)
+	RecordDLPEvent(ctx context.Context, in *RecordDLPEventArgs, opts ...grpc.CallOption) (*OperationReply, error)
+	GetSecurity(ctx context.Context, in *GetSecurityArgs, opts ...grpc.CallOption) (*GetSecurityReply, error)
 }
 
 type groupClient struct {
@@ -263,6 +271,46 @@ func (c *groupClient) MemberIDs(ctx context.Context, in *MemberIDsArgs, opts ...
 	return out, nil
 }
 
+func (c *groupClient) SetGroupSecurity(ctx context.Context, in *SetGroupSecurityArgs, opts ...grpc.CallOption) (*SecuritySettingsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SecuritySettingsReply)
+	err := c.cc.Invoke(ctx, Group_SetGroupSecurity_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupClient) SetMemberRestriction(ctx context.Context, in *SetMemberRestrictionArgs, opts ...grpc.CallOption) (*OperationReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OperationReply)
+	err := c.cc.Invoke(ctx, Group_SetMemberRestriction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupClient) RecordDLPEvent(ctx context.Context, in *RecordDLPEventArgs, opts ...grpc.CallOption) (*OperationReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OperationReply)
+	err := c.cc.Invoke(ctx, Group_RecordDLPEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupClient) GetSecurity(ctx context.Context, in *GetSecurityArgs, opts ...grpc.CallOption) (*GetSecurityReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSecurityReply)
+	err := c.cc.Invoke(ctx, Group_GetSecurity_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GroupServer is the server API for Group service.
 // All implementations must embed UnimplementedGroupServer
 // for forward compatibility.
@@ -286,6 +334,10 @@ type GroupServer interface {
 	MuteAll(context.Context, *MuteAllArgs) (*OperationReply, error)
 	GetMembership(context.Context, *GetMembershipArgs) (*GetMembershipReply, error)
 	MemberIDs(context.Context, *MemberIDsArgs) (*MemberIDsReply, error)
+	SetGroupSecurity(context.Context, *SetGroupSecurityArgs) (*SecuritySettingsReply, error)
+	SetMemberRestriction(context.Context, *SetMemberRestrictionArgs) (*OperationReply, error)
+	RecordDLPEvent(context.Context, *RecordDLPEventArgs) (*OperationReply, error)
+	GetSecurity(context.Context, *GetSecurityArgs) (*GetSecurityReply, error)
 	mustEmbedUnimplementedGroupServer()
 }
 
@@ -352,6 +404,18 @@ func (UnimplementedGroupServer) GetMembership(context.Context, *GetMembershipArg
 }
 func (UnimplementedGroupServer) MemberIDs(context.Context, *MemberIDsArgs) (*MemberIDsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MemberIDs not implemented")
+}
+func (UnimplementedGroupServer) SetGroupSecurity(context.Context, *SetGroupSecurityArgs) (*SecuritySettingsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetGroupSecurity not implemented")
+}
+func (UnimplementedGroupServer) SetMemberRestriction(context.Context, *SetMemberRestrictionArgs) (*OperationReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetMemberRestriction not implemented")
+}
+func (UnimplementedGroupServer) RecordDLPEvent(context.Context, *RecordDLPEventArgs) (*OperationReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordDLPEvent not implemented")
+}
+func (UnimplementedGroupServer) GetSecurity(context.Context, *GetSecurityArgs) (*GetSecurityReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSecurity not implemented")
 }
 func (UnimplementedGroupServer) mustEmbedUnimplementedGroupServer() {}
 func (UnimplementedGroupServer) testEmbeddedByValue()               {}
@@ -716,6 +780,78 @@ func _Group_MemberIDs_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Group_SetGroupSecurity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetGroupSecurityArgs)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServer).SetGroupSecurity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Group_SetGroupSecurity_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServer).SetGroupSecurity(ctx, req.(*SetGroupSecurityArgs))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Group_SetMemberRestriction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetMemberRestrictionArgs)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServer).SetMemberRestriction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Group_SetMemberRestriction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServer).SetMemberRestriction(ctx, req.(*SetMemberRestrictionArgs))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Group_RecordDLPEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordDLPEventArgs)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServer).RecordDLPEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Group_RecordDLPEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServer).RecordDLPEvent(ctx, req.(*RecordDLPEventArgs))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Group_GetSecurity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSecurityArgs)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServer).GetSecurity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Group_GetSecurity_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServer).GetSecurity(ctx, req.(*GetSecurityArgs))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Group_ServiceDesc is the grpc.ServiceDesc for Group service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -798,6 +934,22 @@ var Group_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MemberIDs",
 			Handler:    _Group_MemberIDs_Handler,
+		},
+		{
+			MethodName: "SetGroupSecurity",
+			Handler:    _Group_SetGroupSecurity_Handler,
+		},
+		{
+			MethodName: "SetMemberRestriction",
+			Handler:    _Group_SetMemberRestriction_Handler,
+		},
+		{
+			MethodName: "RecordDLPEvent",
+			Handler:    _Group_RecordDLPEvent_Handler,
+		},
+		{
+			MethodName: "GetSecurity",
+			Handler:    _Group_GetSecurity_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

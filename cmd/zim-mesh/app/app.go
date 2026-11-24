@@ -29,6 +29,7 @@ type Deps struct {
 	GroupVersion *groupversion.Service
 	MemberCache  *groupsvc.MemberCache
 	Webhook      webhook.Notifier
+	MemberStatus groupsvc.MemberStatusPublisher
 }
 
 // Init registers all mesh providers on one proxy.
@@ -52,5 +53,6 @@ func Init(proxy *mesh.Proxy, deps Deps) {
 	groupServer.SetGroupVersion(deps.GroupVersion)
 	groupServer.SetMemberCache(deps.MemberCache)
 	groupServer.SetWebhook(deps.Webhook)
+	groupServer.SetMemberStatusPublisher(deps.MemberStatus)
 	groupServer.Init()
 }

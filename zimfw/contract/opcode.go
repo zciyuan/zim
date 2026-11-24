@@ -80,6 +80,9 @@ const (
 	OpMyGroups       int32 = 1314
 	OpSearchGroup    int32 = 1315
 	OpGroupNotify    int32 = 1317
+	// ADR-0043: group security settings (scheduled mute / DLP / penalty).
+	OpSetGroupSecurity     int32 = 1318
+	OpSetMemberRestriction int32 = 1319
 )
 
 // Conversation opcodes.
@@ -114,6 +117,9 @@ const (
 	OpAddReaction    int32 = 1515
 	OpRemoveReaction int32 = 1516
 	OpTyping         int32 = 1517
+	// ADR-0043: burn-after-reading ack and screenshot report.
+	OpBurnReadAck      int32 = 1518
+	OpScreenshotReport int32 = 1519
 )
 
 // Synchronization opcodes.
@@ -135,6 +141,19 @@ const (
 	OpCallState        int32 = 1805
 	OpRoomToken        int32 = 1806
 	OpParticipantState int32 = 1807
+	// ADR-0043: voice room lifecycle and seat control (voiceroom).
+	OpVoiceRoomCreate       int32 = 1808
+	OpVoiceRoomList         int32 = 1809
+	OpVoiceRoomJoin         int32 = 1810
+	OpVoiceRoomRefreshToken int32 = 1811
+	OpTakeSeat              int32 = 1812
+	OpLeaveSeat             int32 = 1813
+	OpKickSeat              int32 = 1814
+	OpForceMuteSeat         int32 = 1815
+	OpLockSeat              int32 = 1816
+	OpHandUp                int32 = 1817
+	OpApproveHandUp         int32 = 1818
+	OpInviteToSeat          int32 = 1819
 )
 
 // Server-to-client push opcodes. They must never be registered as request
@@ -149,6 +168,12 @@ const (
 	OpPushTyping     int32 = 1908
 	OpPushFriend     int32 = 1909
 	OpPushNotify     int32 = 1907
+	// ADR-0043: burn countdown/delete and voice-room pushes.
+	OpPushBurnTimerStart  int32 = 1910
+	OpPushBurnDelete      int32 = 1911
+	OpPushSeatUpdate      int32 = 1912
+	OpPushVoiceRoomClosed int32 = 1913
+	OpPushVoiceRoomGift   int32 = 1914
 )
 
 // Infrastructure opcodes.
@@ -204,7 +229,7 @@ func SegmentOf(opcode int32) (OpcodeSegment, bool) {
 
 // IsPush reports whether opcode is a server-to-client push opcode.
 func IsPush(opcode int32) bool {
-	return opcode >= OpPushMsg && opcode <= OpPushNotify
+	return opcode >= OpPushMsg && opcode <= OpPushVoiceRoomGift
 }
 
 // IsInfra reports whether opcode is an infrastructure control frame.
@@ -240,6 +265,7 @@ var AllOpcode = map[int32]OpcodeSegment{
 	OpSetGroupAdmin: {Domain: "group", Base: 1300, Max: 1399}, OpMuteMember: {Domain: "group", Base: 1300, Max: 1399},
 	OpMuteAll: {Domain: "group", Base: 1300, Max: 1399}, OpMyGroups: {Domain: "group", Base: 1300, Max: 1399},
 	OpSearchGroup: {Domain: "group", Base: 1300, Max: 1399}, OpGroupNotify: {Domain: "group", Base: 1300, Max: 1399},
+	OpSetGroupSecurity: {Domain: "group", Base: 1300, Max: 1399}, OpSetMemberRestriction: {Domain: "group", Base: 1300, Max: 1399},
 	OpConversationList: {Domain: "conversation", Base: 1400, Max: 1499}, OpPinConversation: {Domain: "conversation", Base: 1400, Max: 1499},
 	OpNotifySetting: {Domain: "conversation", Base: 1400, Max: 1499}, OpDeleteConversation: {Domain: "conversation", Base: 1400, Max: 1499},
 	OpReadConversation: {Domain: "conversation", Base: 1400, Max: 1499}, OpUnread: {Domain: "conversation", Base: 1400, Max: 1499},
@@ -252,6 +278,7 @@ var AllOpcode = map[int32]OpcodeSegment{
 	OpBurn: {Domain: "message", Base: 1500, Max: 1599}, OpStream: {Domain: "message", Base: 1500, Max: 1599},
 	OpPullBySeq: {Domain: "message", Base: 1500, Max: 1599}, OpSearchMsg: {Domain: "message", Base: 1500, Max: 1599},
 	OpSendStatus: {Domain: "message", Base: 1500, Max: 1599}, OpSyncMissing: {Domain: "message", Base: 1500, Max: 1599},
+	OpBurnReadAck: {Domain: "message", Base: 1500, Max: 1599}, OpScreenshotReport: {Domain: "message", Base: 1500, Max: 1599},
 	OpSyncCheck: {Domain: "sync", Base: 1600, Max: 1699}, OpSyncFriend: {Domain: "sync", Base: 1600, Max: 1699},
 	OpSyncGroupMember: {Domain: "sync", Base: 1600, Max: 1699}, OpSyncConversation: {Domain: "sync", Base: 1600, Max: 1699},
 	OpFullSync: {Domain: "sync", Base: 1600, Max: 1699}, OpVersionHash: {Domain: "sync", Base: 1600, Max: 1699},
@@ -259,9 +286,18 @@ var AllOpcode = map[int32]OpcodeSegment{
 	OpCallHangup: {Domain: "rtc", Base: 1800, Max: 1899}, OpCallCancel: {Domain: "rtc", Base: 1800, Max: 1899},
 	OpCallState: {Domain: "rtc", Base: 1800, Max: 1899}, OpRoomToken: {Domain: "rtc", Base: 1800, Max: 1899},
 	OpParticipantState: {Domain: "rtc", Base: 1800, Max: 1899},
-	OpPushMsg:          {Domain: "push", Base: 1900, Max: 1999}, OpPushKick: {Domain: "push", Base: 1900, Max: 1999},
+	OpVoiceRoomCreate:  {Domain: "rtc", Base: 1800, Max: 1899}, OpVoiceRoomList: {Domain: "rtc", Base: 1800, Max: 1899},
+	OpVoiceRoomJoin: {Domain: "rtc", Base: 1800, Max: 1899}, OpVoiceRoomRefreshToken: {Domain: "rtc", Base: 1800, Max: 1899},
+	OpTakeSeat: {Domain: "rtc", Base: 1800, Max: 1899}, OpLeaveSeat: {Domain: "rtc", Base: 1800, Max: 1899},
+	OpKickSeat: {Domain: "rtc", Base: 1800, Max: 1899}, OpForceMuteSeat: {Domain: "rtc", Base: 1800, Max: 1899},
+	OpLockSeat: {Domain: "rtc", Base: 1800, Max: 1899}, OpHandUp: {Domain: "rtc", Base: 1800, Max: 1899},
+	OpApproveHandUp: {Domain: "rtc", Base: 1800, Max: 1899}, OpInviteToSeat: {Domain: "rtc", Base: 1800, Max: 1899},
+	OpPushMsg: {Domain: "push", Base: 1900, Max: 1999}, OpPushKick: {Domain: "push", Base: 1900, Max: 1999},
 	OpPushOnline: {Domain: "push", Base: 1900, Max: 1999}, OpPushGroupEvent: {Domain: "push", Base: 1900, Max: 1999},
 	OpPushProfile: {Domain: "push", Base: 1900, Max: 1999}, OpPushReadSync: {Domain: "push", Base: 1900, Max: 1999}, OpPushTyping: {Domain: "push", Base: 1900, Max: 1999}, OpPushFriend: {Domain: "push", Base: 1900, Max: 1999},
-	OpPushNotify:  {Domain: "push", Base: 1900, Max: 1999},
-	OpRateLimited: {Domain: "infra", Base: 9000, Max: 9999}, OpServerBusy: {Domain: "infra", Base: 9000, Max: 9999},
+	OpPushNotify:         {Domain: "push", Base: 1900, Max: 1999},
+	OpPushBurnTimerStart: {Domain: "push", Base: 1900, Max: 1999}, OpPushBurnDelete: {Domain: "push", Base: 1900, Max: 1999},
+	OpPushSeatUpdate: {Domain: "push", Base: 1900, Max: 1999}, OpPushVoiceRoomClosed: {Domain: "push", Base: 1900, Max: 1999},
+	OpPushVoiceRoomGift: {Domain: "push", Base: 1900, Max: 1999},
+	OpRateLimited:       {Domain: "infra", Base: 9000, Max: 9999}, OpServerBusy: {Domain: "infra", Base: 9000, Max: 9999},
 }

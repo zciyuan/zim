@@ -130,6 +130,7 @@ func (b *appendBatcher) flush(batch []*appendRequest) {
 	}
 	groups := make(map[string][]int)
 	docMsgs := make(map[string][]blockMsg)
+	burnPayloads := make([]*model.Message, 0, len(batch))
 	for index, request := range batch {
 		if !inserted[index] {
 			continue
@@ -138,11 +139,21 @@ func (b *appendBatcher) flush(batch []*appendRequest) {
 		blockIdx := (msg.Seq - 1) / model.MessageBlockSize
 		docID := fmt.Sprintf("%s:%d", msg.ConversationID, blockIdx)
 		groups[docID] = append(groups[docID], index)
+		// Burn messages keep the payload in burn_messages with TTL erasure;
+		// the main block holds only light metadata (ADR-0043 §2.4.1).
+		content, tokens := msg.Content, searchTokens(msg.Content)
+		if msg.BurnTTL > 0 {
+			content, tokens = "", nil
+			burnPayloads = append(burnPayloads, msg)
+		}
 		docMsgs[docID] = append(docMsgs[docID], blockMsg{Msg: messageDoc{
 			ServerMsgID: msg.ServerMsgID, ClientMsgID: msg.ClientMsgID, SendID: msg.SendID,
 			RecvID: msg.RecvID, GroupID: msg.GroupID, MsgType: msg.MsgType,
-			Content: msg.Content, SearchTokens: searchTokens(msg.Content), AtUserIDs: msg.AtUserIDs, Seq: msg.Seq,
+			Content: content, SearchTokens: tokens, AtUserIDs: msg.AtUserIDs, Seq: msg.Seq,
 			SendTime: msg.SendTime, Status: msg.Status,
+			BurnTTL: msg.BurnTTL, BurnExpireAt: msg.BurnExpireAt,
+			MaxRetentionAt: msg.MaxRetentionAt, SecurityFlags: msg.SecurityFlags,
+			ExtType: msg.ExtType, ExtPayload: msg.ExtPayload,
 		}})
 	}
 	blockModels := make([]mongo.WriteModel, 0, len(groups))
@@ -212,6 +223,20 @@ func (b *appendBatcher) flush(batch []*appendRequest) {
 	commitSet := make(map[int]bool, len(commitIndexes))
 	for _, index := range commitIndexes {
 		commitSet[index] = true
+	}
+	// Burn payloads move to burn_messages after the block is durable; a failed
+	// store keeps the idem row committed so a redelivery repairs it (same
+	// ordering as appendDirect, ADR-0043 §2.4.1).
+	for _, burnMsg := range burnPayloads {
+		if burnErr := b.dao.StoreBurnPayload(ctx, burnMsg); burnErr != nil {
+			for _, request := range batch {
+				if !inserted[indexOf(batch, request)] {
+					continue
+				}
+				request.outcome <- appendOutcome{err: burnErr}
+			}
+			return
+		}
 	}
 	for index, request := range batch {
 		if !inserted[index] {

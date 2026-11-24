@@ -1,0 +1,261 @@
+syntax = "proto3";
+
+package zim.service.wallet;
+
+option go_package = "github.com/zciyuan/ZIM/internal/service/wallet/pb;walletpb";
+
+// 金额字段一律 int64 微 USDT（1 USDT = 1_000_000），禁止浮点。
+
+message GetBalanceArgs {
+  int64 uid = 1;
+}
+
+message GetBalanceReply {
+  int64 uid = 1;
+  int64 available_balance = 2;
+  int64 frozen_balance = 3;
+  int64 version = 4;
+}
+
+message EnsureAccountArgs {
+  int64 uid = 1;
+}
+
+message EnsureAccountReply {
+  int64 uid = 1;
+  bool created = 2;
+}
+
+message SetPayPasswordArgs {
+  int64 uid = 1;
+  string pay_password = 2;
+}
+
+message SetPayPasswordReply {
+  bool ok = 1;
+}
+
+message VerifyPayPasswordArgs {
+  int64 uid = 1;
+  string pay_password = 2;
+}
+
+message VerifyPayPasswordReply {
+  bool ok = 1;
+}
+
+message SetTOTPArgs {
+  int64 uid = 1;
+}
+
+message SetTOTPReply {
+  string secret = 1; // 仅本次返回，服务端加密存储，不回显
+}
+
+message VerifyTOTPArgs {
+  int64 uid = 1;
+  string code = 2;
+}
+
+message VerifyTOTPReply {
+  bool ok = 1;
+}
+
+message WithdrawArgs {
+  int64 uid = 1;
+  string biz_order_id = 2; // 幂等键
+  string chain = 3;        // TRC20 / ERC20 / BEP20
+  string to_address = 4;
+  int64 amount = 5;        // 微 USDT（含手续费，gross）
+  string pay_password = 6;
+  string totp_code = 7;
+}
+
+message WithdrawReply {
+  string biz_order_id = 1;
+  int32 status = 2; // 0=PENDING_AUDIT 1=APPROVED_SENDING 2=BROADCASTED 3=SUCCESS 4=REJECTED 5=FAILED_REFUNDED
+  int64 network_fee = 3;
+  int64 actual_amount = 4;
+  string tx_hash = 5;
+}
+
+message AuditWithdrawArgs {
+  string biz_order_id = 1;
+  bool approve = 2;
+  int64 admin_id = 3;
+  string remark = 4;
+}
+
+message AuditWithdrawReply {
+  string biz_order_id = 1;
+  int32 status = 2;
+  string tx_hash = 3;
+}
+
+message DepositCallbackArgs {
+  string chain = 1;
+  string tx_hash = 2;
+  int32 log_index = 3;
+  string from_address = 4;
+  string to_address = 5;
+  int64 amount = 6;      // 微 USDT
+  int32 confirmations = 7;
+}
+
+message DepositCallbackReply {
+  int32 status = 1; // 0=PENDING 1=CREDITED 2=DUST_IGNORED
+  int64 credited_uid = 2;
+}
+
+message GetDepositAddressArgs {
+  int64 uid = 1;
+  string chain = 2;
+}
+
+message GetDepositAddressReply {
+  int64 uid = 1;
+  string chain = 2;
+  string address = 3;
+}
+
+message FreezeAccountArgs {
+  int64 uid = 1;
+}
+
+message FreezeAccountReply {
+  bool ok = 1;
+}
+
+message UnfreezeAccountArgs {
+  int64 uid = 1;
+}
+
+message UnfreezeAccountReply {
+  bool ok = 1;
+}
+
+message DailyReconcileArgs {
+  int64 day = 1; // 对账日零点（毫秒），用于日志与指标标注
+}
+
+message DailyReconcileReply {
+  bool ok = 1;
+  int64 user_total = 2;      // Σ 用户 available+frozen
+  int64 system_total = 3;    // Σ 系统过渡户 available+frozen
+  int64 deposits = 4;        // Σ DEPOSIT 流水
+  int64 withdrawals = 5;     // Σ |WITHDRAW_SUCCESS| 流水
+  int64 difference = 6;      // 恒等式差值，非零即账实不平
+}
+
+// ---- M4: red packets and tips (ADR-0043 §4.4/§4.5) ----
+
+message SendRedPacketArgs {
+  string biz_order_id = 1; // 幂等单号
+  int64  sender_uid = 2;
+  string conv_id = 3;
+  int32  conv_type = 4;    // 1 单聊 / 2 群聊
+  int32  rp_type = 5;      // 1 单聊专属 / 2 群普通 / 3 群拼手气 / 4 群专属
+  int64  target_uid = 6;   // 专属红包目标
+  int64  total_amount = 7; // 微 USDT
+  int32  total_count = 8;
+  string greeting = 9;
+}
+
+message RedPacketInfo {
+  int64  rp_id = 1;
+  string biz_order_id = 2;
+  int64  sender_uid = 3;
+  string conv_id = 4;
+  int32  conv_type = 5;
+  int32  rp_type = 6;
+  int64  target_uid = 7;
+  int64  total_amount = 8;
+  int32  total_count = 9;
+  int64  claimed_amount = 10;
+  int32  claimed_count = 11;
+  int64  refund_amount = 12;
+  string greeting = 13;
+  int32  status = 14;      // 1 ACTIVE / 2 DEPLETED / 3 EXPIRED_REFUNDED
+  int64  expire_at = 15;
+  int64  created_at = 16;
+}
+
+message SendRedPacketReply {
+  RedPacketInfo packet = 1;
+}
+
+message ClaimRedPacketArgs {
+  int64 rp_id = 1;
+  int64 claimer_uid = 2;
+}
+
+message ClaimRedPacketReply {
+  int64  rp_id = 1;
+  int64  amount = 2;       // 抢到金额（微 USDT）
+  bool   is_best_luck = 3;
+}
+
+message GetRedPacketArgs {
+  int64 rp_id = 1;
+}
+
+message RedPacketClaimInfo {
+  int64 claimer_uid = 1;
+  int64 amount = 2;
+  bool  is_best_luck = 3;
+  int64 claimed_at = 4;
+}
+
+message GetRedPacketReply {
+  RedPacketInfo packet = 1;
+  repeated RedPacketClaimInfo claims = 2;
+}
+
+message SendTipArgs {
+  string biz_order_id = 1; // 幂等单号
+  int32  scene = 2;        // 1 单聊 / 2 群聊 / 3 语音房
+  string scene_id = 3;
+  int64  sender_uid = 4;
+  int64  receiver_uid = 5;
+  int32  gift_id = 6;      // 0 = 纯 USDT
+  int32  gift_count = 7;
+  string combo_id = 8;
+  int64  gross_amount = 9; // 微 USDT
+  string message = 10;
+}
+
+message SendTipReply {
+  string biz_order_id = 1;
+  int64  gross_amount = 2;
+  int64  platform_fee = 3;
+  int64  net_amount = 4;
+}
+
+message RefundExpiredRedPacketsArgs {
+  int32 limit = 1;
+}
+
+message RefundExpiredRedPacketsReply {
+  int32 refunded = 1;
+}
+
+service Wallet {
+  rpc GetBalance(GetBalanceArgs) returns (GetBalanceReply);
+  rpc EnsureAccount(EnsureAccountArgs) returns (EnsureAccountReply);
+  rpc SetPayPassword(SetPayPasswordArgs) returns (SetPayPasswordReply);
+  rpc VerifyPayPassword(VerifyPayPasswordArgs) returns (VerifyPayPasswordReply);
+  rpc SetTOTP(SetTOTPArgs) returns (SetTOTPReply);
+  rpc VerifyTOTP(VerifyTOTPArgs) returns (VerifyTOTPReply);
+  rpc Withdraw(WithdrawArgs) returns (WithdrawReply);
+  rpc AuditWithdraw(AuditWithdrawArgs) returns (AuditWithdrawReply);
+  rpc DepositCallback(DepositCallbackArgs) returns (DepositCallbackReply);
+  rpc GetDepositAddress(GetDepositAddressArgs) returns (GetDepositAddressReply);
+  rpc FreezeAccount(FreezeAccountArgs) returns (FreezeAccountReply);
+  rpc UnfreezeAccount(UnfreezeAccountArgs) returns (UnfreezeAccountReply);
+  rpc DailyReconcile(DailyReconcileArgs) returns (DailyReconcileReply);
+  rpc SendRedPacket(SendRedPacketArgs) returns (SendRedPacketReply);
+  rpc ClaimRedPacket(ClaimRedPacketArgs) returns (ClaimRedPacketReply);
+  rpc GetRedPacket(GetRedPacketArgs) returns (GetRedPacketReply);
+  rpc SendTip(SendTipArgs) returns (SendTipReply);
+  rpc RefundExpiredRedPackets(RefundExpiredRedPacketsArgs) returns (RefundExpiredRedPacketsReply);
+}

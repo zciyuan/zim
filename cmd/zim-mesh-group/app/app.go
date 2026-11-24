@@ -13,12 +13,14 @@ import (
 
 // Init registers the group mesh service provider.
 func Init(proxy *mesh.Proxy, repo groupsvc.Repository, changes *changelog.Service,
-	conv *conversationsvc.Service, versions *groupversion.Service, members *groupsvc.MemberCache, notifier webhook.Notifier) {
+	conv *conversationsvc.Service, versions *groupversion.Service, members *groupsvc.MemberCache,
+	notifier webhook.Notifier, statusPub groupsvc.MemberStatusPublisher) {
 	server := groupsvc.NewServer(proxy, repo)
 	server.SetChangeLog(changes)
 	server.SetConversation(conv)
 	server.SetGroupVersion(versions)
 	server.SetMemberCache(members)
 	server.SetWebhook(notifier)
+	server.SetMemberStatusPublisher(statusPub)
 	server.Init()
 }

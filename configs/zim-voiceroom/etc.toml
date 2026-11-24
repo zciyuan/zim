@@ -1,0 +1,51 @@
+# ZIM zim-voiceroom bootstrap configuration.
+# Run: ./build/bin/zim-voiceroom -etc ./configs/zim-voiceroom
+
+pid = "./run/zim-voiceroom.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8208"
+
+[zim.postgres]
+    dsn = "postgres://zim:zim@127.0.0.1:5432/zim?sslmode=disable"
+
+[zim.voiceroom]
+    seatCount = 8
+    reconnectTimeoutMs = 30000
+    emptyTimeoutMs = 300000
+    roomTTL = "168h"
+    sfuUrl = ""
+    webhookAddr = ":8210"
+    webhookSecret = "zimdevsecret012345678901234567890123456789"
+    livekitUrl = "http://127.0.0.1:7880"
+    livekitApiKey = "devkey"
+    livekitApiSecret = "zimdevsecret012345678901234567890123456789"
+    livekitTokenTTL = "1h"
+
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+
+[zim.pipe]
+    brokers = ["127.0.0.1:9092"]
+
+[cluster.mesh]
+    name = "voiceroom"
+    addr = ":0"
+    codec = "proto"
+
+[registry.nacos]
+    urls = ["http://127.0.0.1:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]

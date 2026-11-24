@@ -55,13 +55,18 @@ func (d *Dispatcher) HandleMany(ctx context.Context, event *Event, uids []int64)
 		return err
 	}
 	notifications := make([]Notification, 0, len(devices))
+	body := defaultBody
+	if event.BurnTTL > 0 {
+		// ADR-0043 §2.1.6: burn messages never leak content into vendor pushes.
+		body = "你收到一条私密消息"
+	}
 	for _, device := range devices {
 		if device == nil || device.Status != 0 || device.PushToken == "" {
 			continue
 		}
 		notifications = append(notifications, Notification{
 			UID: device.OwnerID, Platform: device.Platform, Provider: device.PushProvider,
-			Token: device.PushToken, Title: defaultTitle, Body: defaultBody, Badge: device.Badge,
+			Token: device.PushToken, Title: defaultTitle, Body: body, Badge: device.Badge,
 			Extra: map[string]string{
 				"server_msg_id": event.ServerMsgID,
 				"conv_id":       event.ConversationID,

@@ -21,6 +21,8 @@ type Event struct {
 	Content        string   `json:"content,omitempty"`
 	SendTime       int64    `json:"send_time"`
 	AtUserIDs      []string `json:"at_user_ids,omitempty"`
+	// BurnTTL > 0 masks the push body (ADR-0043 §2.1.6).
+	BurnTTL int32 `json:"burn_ttl,omitempty"`
 }
 
 // Notification is one provider payload.

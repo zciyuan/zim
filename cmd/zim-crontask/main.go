@@ -2,11 +2,15 @@
 package main
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"time"
 
 	lockredis "github.com/dobyte/due/lock/redis/v2"
 	"github.com/dobyte/due/registry/nacos/v2"
 	"github.com/dobyte/due/v2"
+	"github.com/dobyte/due/v2/encoding/json"
 	"github.com/dobyte/due/v2/etc"
 	"github.com/dobyte/due/v2/log"
 
@@ -19,6 +23,7 @@ import (
 	frienddao "github.com/zciyuan/ZIM/internal/dao/friend"
 	messagedao "github.com/zciyuan/ZIM/internal/dao/message"
 	"github.com/zciyuan/ZIM/internal/define"
+	burnserver "github.com/zciyuan/ZIM/internal/service/burn/server"
 	callrecord "github.com/zciyuan/ZIM/internal/service/callrecord/server"
 	changelogsvc "github.com/zciyuan/ZIM/internal/service/changelog/server"
 	gateclean "github.com/zciyuan/ZIM/internal/service/gateclean/server"
@@ -62,6 +67,52 @@ func main() {
 	)
 	cleanInterval := etc.Get("etc.zim.gateclean.interval", "30s").Duration()
 	crontask := app.New(service, locker, interval, recorder, cleaner, cleanInterval, etc.Get("etc.zim.upload.dir", "").String(), etc.Get("etc.zim.upload.retention", "720h").Duration())
+
+	// ADR-0043: burn-after-reading timer sweep. The toPush publisher reuses the
+	// burn.delete event path consumed by zim-push; media cleanup goes to its
+	// dedicated topic. Both degrade to erase-only when Kafka is not configured.
+	messageDAO := messagedao.New(mongodb.Database())
+	burnSweepCtx, burnSweepCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if burnErr := messageDAO.EnsureBurnIndexes(burnSweepCtx); burnErr != nil {
+		burnSweepCancel()
+		log.Fatalf("ensure burn indexes failed: %v", burnErr)
+	}
+	burnSweepCancel()
+	if brokers := etc.Get("etc.zim.pipe.brokers", []string{}).Strings(); len(brokers) > 0 {
+		kafka := burnserver.NewKafkaPublisher(pipe.NewKafkaProducer(brokers))
+		crontask.WithBurnSweeper(burnserver.New(burnserver.NewMessageRepo(messageDAO), kafka, kafka),
+			etc.Get("etc.zim.burn.sweepInterval", "5s").Duration())
+	} else {
+		crontask.WithBurnSweeper(burnserver.New(burnserver.NewMessageRepo(messageDAO), nil, nil),
+			etc.Get("etc.zim.burn.sweepInterval", "5s").Duration())
+	}
+
+	// ADR-0043 §2.4.3: burn media deletion consumer. The event carries the
+	// object key; deletion is local-dir (S3 lifecycle is the deployment-level
+	// backstop for object stores).
+	if brokers := etc.Get("etc.zim.pipe.brokers", []string{}).Strings(); len(brokers) > 0 {
+		mediaConsumer := pipe.NewKafkaConsumer(brokers, define.ConsumerGroupBurnMedia, define.TopicBurnMediaDelete)
+		go pipe.Run(context.Background(), mediaConsumer, func(ctx context.Context, message pipe.Message) error {
+			event := struct {
+				ObjectKey string `json:"object_key"`
+			}{}
+			if err := json.Unmarshal(message.Value, &event); err != nil {
+				log.Warnf("burn media delete decode failed: %v", err)
+				return pipe.Poison(err)
+			}
+			if event.ObjectKey == "" {
+				return nil
+			}
+			full := filepath.Join(etc.Get("etc.zim.upload.dir", "./run/upload").String(), filepath.FromSlash(event.ObjectKey))
+			if err := os.Remove(full); err != nil && !os.IsNotExist(err) {
+				log.Warnf("burn media delete failed: key = %s, err = %v", event.ObjectKey, err)
+				return err
+			}
+			return nil
+		}, func(err error) {
+			log.Errorf("burn media delete consumer restarted: %v", err)
+		})
+	}
 
 	container.Add(crontask, database, mongodb, cache, health.New(define.ServiceCrontask))
 	container.Serve()

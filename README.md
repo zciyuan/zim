@@ -13,9 +13,9 @@
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-orange">
 </p>
 
-**ZIM** is a single-tenant, self-hosted instant messaging server written in Go. Eleven services cover auth, messaging, conversations, sync, push, RTC signaling, webhooks and admin APIs; clients speak WebSocket + protobuf, services speak gRPC mesh.
+**ZIM** is a single-tenant, self-hosted instant messaging server written in Go. Thirteen services cover auth, messaging, conversations, sync, push, RTC signaling, voice rooms, a USDT wallet, webhooks and admin APIs; clients speak WebSocket + protobuf, services speak gRPC mesh.
 
-ZIM 是面向私有化部署的 IM 服务端基线：**单租户、单 App**，一套服务覆盖认证、单聊/群聊、会话、同步、在线/离线推送、RTC 信令、Webhook 与管理端 API。客户端通过 WebSocket + protobuf 接入；服务之间走 gRPC mesh；消息写入经 Kafka 管道完成 seq、幂等与多存储落盘。
+ZIM 是面向私有化部署的 IM 服务端基线：**单租户、单 App**，一套服务覆盖认证、单聊/群聊、会话、同步、在线/离线推送、RTC 信令、语音房、USDT 钱包（充提/红包/打赏）、Webhook 与管理端 API。客户端通过 WebSocket + protobuf 接入；服务之间走 gRPC mesh；消息写入经 Kafka 管道完成 seq、幂等与多存储落盘。
 
 > **Status: alpha.** 协议、表结构和配置仍在收敛，暂不建议直接用于生产；欢迎 issue / PR。
 
@@ -23,9 +23,11 @@ ZIM 是面向私有化部署的 IM 服务端基线：**单租户、单 App**，�
 
 - **单租户、单 App**：部署边界清晰，适合私有云、行业 IM、企业内部通信，不引入多租户复杂度。
 - **消息不丢、可追溯**：会话内 seq、发送幂等、Kafka 管道 + DLQ、Redis result、Mongo 聚合文档。
-- **一套协议覆盖多端**：WebSocket + protobuf；可选 QUIC/WebTransport（实验）；REST 覆盖账号、好友、群、会话、同步、上传。
+- **安全治理内置**：阅后即焚（TTL 物理擦除）、群禁言/定时禁言/分类禁言/防刷屏与敏感词自动禁言、防截屏水印与 DLP 审计惩罚闭环。
+- **一套协议覆盖多端**：WebSocket + protobuf；可选 QUIC/WebTransport（实验）；REST 覆盖账号、好友、群、会话、同步、上传、钱包。
 - **完整社交模型**：好友申请/黑名单/备注/星标，群与家庭组、成员权限、禁言、解散/退出。
-- **实时能力**：在线推送、presence/typing、RTC 信令 + LiveKit SFU、群/家庭语音房间。
+- **实时能力**：在线推送、presence/typing、RTC 信令 + LiveKit SFU、群/家庭语音房间、语音房麦位玩法（上麦/闭麦/锁麦/举手/邀请）。
+- **资金闭环**：USDT 复式账本（int64 微 USDT）、充提风控、日终对账恒等式、红包（拼手气/专属、Lua 抢包、过期退款）与礼物打赏三段账。
 - **可运维**：Prometheus metrics、`/healthz` + `/readyz`、固定日志字段、Redis 锁选主清理、降级开关。
 - **管理端就绪**：`/admin` REST 覆盖用户、群、家庭组、消息、审计、敏感词、配置、推送证书、举报与统计；管理 UI 在独立仓 [zim-admin](https://github.com/zciyuan/zim-admin)。
 
@@ -39,9 +41,14 @@ ZIM 是面向私有化部署的 IM 服务端基线：**单租户、单 App**，�
 | 群组 | 创建/解散、成员增删、管理员、禁言、群资料、搜索可见性 |
 | 家庭组 | 创建/解散、成员、家庭语音房间 |
 | 消息 | 单聊/群聊、会话内 seq、幂等、按 seq 拉取、撤回、编辑、删除、搜索、引用/合并、reaction |
+| 阅后即焚 | `burn_ttl` 发送、已读启动倒计时（`1518`）、`1910/1911` 焚毁推送、Mongo TTL 物理擦除、离线推送脱敏 |
+| 群安全 | 群安全设置（`1318`）/成员禁言（`1319`）：定时/分类/全员禁言、新人保护、防截屏水印、截屏上报 DLP（`1519`）审计 + 自动惩罚、防刷屏/敏感词自动禁言 |
 | 会话 | 列表、置顶、删除、已读/未读、接收选项、未读数 |
 | 同步 | 登录 SyncState、`SyncCheck` 差异窗口、`SyncMissing` 缺口补齐 |
 | 实时 | presence、typing、RTC 信令（LiveKit SFU）、群/家庭语音房间 |
+| 语音房 | 创建/列表/加入（`1808-1810`）、麦位状态机（`1812-1819`：上麦/下麦/踢/强制闭麦/锁麦/举手/邀请）、`1912-1914` 推送、LiveKit 权限强控、断线保麦 30s、空房回收 300s |
+| 钱包 | USDT 复式账本（8 表）、充提（TRC20/ERC20/BEP20 回调）、支付密码 + TOTP、风控（24h 冷却、站内地址拦截）、日终对账恒等式；`/v1/wallet/*` REST |
+| 红包/打赏 | 拼手气（整数二倍均值）/专属红包、Redis Lua 抢包、异步入账 + 每分钟补偿、24h 过期退款、礼物打赏三段账 + 平台分成 |
 | 推送 | 在线 Multicast；离线 dummy / HTTP / FCM；按设备路由、频控 |
 | 文件 | 本地上传；S3 兼容对象存储（SeaweedFS / MinIO / Ceph RGW / OSS） |
 | Webhook | 消息/群事件回调，HMAC-SHA256 签名、3 次重试、失败入 DLQ 可重放 |
@@ -57,7 +64,7 @@ ZIM 是面向私有化部署的 IM 服务端基线：**单租户、单 App**，�
 | 服务间通信 | gRPC mesh（due transport） |
 | 元数据 / 消息 | PostgreSQL 16、MongoDB 7 |
 | 缓存 / 路由 | Redis 7（locate、seq、幂等、readseq） |
-| 异步管道 | Kafka（`toRedis`、`toMongo`、`toPush`、`toOfflinePush`） |
+| 异步管道 | Kafka（`toRedis`、`toMongo`、`toPush`、`toOfflinePush` + 事件主题 `burnMediaDelete`、`groupMemberStatus`、`dlpScreenshotAudit`、`walletRpClaim`、`walletRpRefund`、`walletTipSettled`） |
 | 注册 / 配置 | Nacos 2.5 |
 | 音视频 | LiveKit SFU |
 | 对象存储 | S3 兼容（SeaweedFS / MinIO / Ceph RGW / OSS） |
@@ -72,10 +79,17 @@ flowchart LR
     gate --> msg[zim-node-msg]
     gate --> conv[zim-node-conv]
     api --> mesh[mesh: auth / user / relation / group]
+    api --> wallet[zim-wallet]
+    api --> voiceroom[zim-voiceroom]
 
     mesh --> pg[(PostgreSQL)]
+    wallet --> pg
+    wallet --> redis[(Redis)]
+    voiceroom --> pg
+    voiceroom --> redis
+    voiceroom --> livekit[LiveKit SFU]
     msg --> seq[zimfw/seq]
-    seq --> redis[(Redis)]
+    seq --> redis
     msg --> mongo[(MongoDB)]
     conv --> pg
     conv --> redis
@@ -87,7 +101,7 @@ flowchart LR
     msg -->|Kafka toPush| push[zim-push]
     push --> gate
     push -.->|offline| provider[HTTP / FCM]
-    api --> livekit[LiveKit SFU]
+    api --> livekit
 ```
 
 消息写路径（单聊/群聊同一套）：
@@ -101,20 +115,22 @@ flowchart LR
 | 服务 | 职责 |
 |---|---|
 | `zim-gate` | WebSocket/QUIC/WebTransport 接入、握手鉴权、连接路由 |
-| `zim-node-msg` | 消息校验、seq/幂等编排、在线推送触发 |
+| `zim-node-msg` | 消息校验、seq/幂等编排、在线推送触发；阅后即焚/群安全/DLP 协议处理 |
 | `zim-node-conv` | 会话列表、置顶/删除、已读/未读、接收选项 |
 | `zim-mesh-auth/user/relation/group` | 认证、资料、好友、群/家庭组 |
 | `zim-transfer` | Kafka 消费、Mongo 落盘、会话更新、`toPush` |
 | `zim-push` | 在线 Multicast、离线 provider 路由、频控 |
+| `zim-wallet` | USDT 复式账本、充提风控、红包/打赏、对账与补偿任务 |
+| `zim-voiceroom` | 语音房麦位状态机（Redis Lua）、LiveKit 权限强控、webhook 校准 |
 | `zim-api` | `/v1`、`/api`、`/admin` REST |
-| `zim-crontask` | 过期数据清理、死网关 locate 回收 |
+| `zim-crontask` | 过期数据清理、死网关 locate 回收、阅后即焚扫除与媒体物理删除 |
 | `zimfw` | 框架层：contract/route/seq/idem/pipe/multi/rtc/testkit |
 
 ## 快速开始
 
 ### Docker Compose
 
-前置：Docker 24+、Compose v2、8 GB+ 内存（建议 16 GB；11 个服务 + PG/Mongo/Redis/Kafka/Nacos/LiveKit/SeaweedFS）。
+前置：Docker 24+、Compose v2、8 GB+ 内存（建议 16 GB；13 个服务 + PG/Mongo/Redis/Kafka/Nacos/LiveKit/SeaweedFS）。
 
 ```bash
 git clone https://github.com/zciyuan/zim.git
@@ -151,12 +167,12 @@ Go 1.27+：
 ```bash
 go install github.com/magefile/mage@v1.17.2
 
-mage build          # 11 个二进制 → build/bin/
+mage build          # 13 个二进制 → build/bin/
 mage buildService zim-gate
 mage test           # 根模块 + zimfw，-race
 mage lint
 mage cover          # 覆盖率报告 → _output/coverage.html
-mage configCheck    # 校验 11 个服务的 etc-default.toml
+mage configCheck    # 校验 13 个服务的 etc-default.toml
 ```
 
 依赖已就绪时，可直接运行单个服务：
@@ -229,7 +245,7 @@ deploy/                               # Dockerfile / compose / Helm / SQL / Live
 
 | 仓库 | 说明 |
 |---|---|
-| [zim](https://github.com/zciyuan/zim) | 服务端（本仓库）：11 个服务 + `zimfw` 框架层 |
+| [zim](https://github.com/zciyuan/zim) | 服务端（本仓库）：13 个服务 + `zimfw` 框架层 |
 | [zim-admin](https://github.com/zciyuan/zim-admin) | 管理后台：基于 [GoWind Admin](https://gitee.com/tx7do/go-wind-admin) 的 `/admin` 管理端，独立构建与发布 |
 | [zim-web-client](https://github.com/zciyuan/zim-web-client) | 产品前端：React + TypeScript，一套代码覆盖 Web / PC / App（ADR-0029） |
 
@@ -239,6 +255,8 @@ deploy/                               # Dockerfile / compose / Helm / SQL / Live
 
 生产部署规格见 [Helm chart](<deploy/helm/README.md>)。完整的架构、协议与验收文档（ZIM-01/02/03、ADR）单独维护，不在本仓库。
 
+远程/临时服务器用 docker compose 反复部署时，请用统一脚本并遵守磁盘维护纪律（详见 ZIM-03 §2.14）：`deploy/scripts/redeploy.sh`（`--build` 才构建且构建后自动清理缓存）+ 每日 cron（`deploy/scripts/cron-daily.sh`，nacos 日志轮转等）。
+
 ## 测试与质量
 
 ```bash
@@ -247,7 +265,17 @@ mage lint      # golangci-lint（根模块 + zimfw）
 mage cover     # 覆盖率报告
 ```
 
-CI（[ci.yml](<.github/workflows/ci.yml>)）执行 `go test`、`golangci-lint`、`mage configCheck` 与 11 个二进制的构建。`zimfw/testkit` 提供 6 项 due 契约测试（BindKick / MultiDevice / LocateRedirect / PushAck / ChannelPublish / GracefulDrain）。
+CI（[ci.yml](<.github/workflows/ci.yml>)）执行 `go test`、`golangci-lint`、`mage configCheck` 与 13 个二进制的构建。`zimfw/testkit` 提供 6 项 due 契约测试（BindKick / MultiDevice / LocateRedirect / PushAck / ChannelPublish / GracefulDrain）。
+
+功能烟测工具（docker compose 栈拉起后可用）：
+
+```bash
+go run ./tools/featprobe   # WS 双端 12 项断言：阅后即焚/群安全/语音房
+go run ./tools/walletsmoke # 资金全链路：充值→红包→打赏→对账恒等式=0
+go run ./tools/rpprobe     # 红包卡片消息（msg_type=7, ext_type=1）端到端
+go run ./tools/seede2e     # 预置 alice↔bob 会话，供浏览器 e2e 使用
+go run ./tools/hashpwd     # 校验/生成 bcrypt 密码哈希（dev_seed 用）
+```
 
 压测工具：
 
@@ -260,9 +288,9 @@ go run ./tools/msgload -messages 100
 
 ## 项目状态
 
-- **Alpha**：核心链路（登录、单聊/群聊、会话、同步一阶段、在线推送、RTC 信令、管理端 API）可用；协议与表结构仍可能调整。
-- 待做：同步二阶段（`1606/1906`）、90 天温层、真实推送回执、合规（实名/注销/未成年人/180 天留存）、管理 UI、多地域、TURN、benchmark。
-- 已知限制：LiveKit 单地域；离线推送需要厂商凭证；`/admin` 必须内网访问；文档以中文为主。
+- **Alpha**：核心链路（登录、单聊/群聊、会话、同步一阶段、在线推送、RTC 信令、管理端 API）可用；功能需求 1.1（阅后即焚、群安全、语音房、USDT 钱包、红包/打赏）已落地并通过本地与远程联调烟测（ADR-0043）。协议与表结构仍可能调整。
+- 待做：同步二阶段（`1606/1906`）、90 天温层、真实推送回执、合规（实名/注销/未成年人/180 天留存）、管理 UI、多地域、TURN、benchmark、红包/打赏/审计事件的消费端特效与风控闭环。
+- 已知限制：LiveKit 单地域；离线推送需要厂商凭证；`/admin` 必须内网访问；钱包链上交互为 dummy signer（接入真实 KMS/链适配器后启用）；文档以中文为主。
 
 ## 贡献
 

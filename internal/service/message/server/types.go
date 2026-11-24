@@ -30,6 +30,10 @@ type SendRequest struct {
 	MsgType     int32
 	Content     string
 	AtUserIDs   []string
+	// ADR-0043: burn-after-reading and business-card extension.
+	BurnTTL    int32
+	ExtType    int32
+	ExtPayload string
 }
 
 // SendResult is the authoritative send response.
@@ -40,6 +44,8 @@ type SendResult struct {
 	UnreadCount int64
 	Duplicate   bool
 	Recipients  []int64
+	// ADR-0043: group burn countdown start (0 for single-chat until read).
+	BurnExpireAt int64
 }
 
 // Prepared is a validated send request ready for the Kafka pipeline.
@@ -82,12 +88,13 @@ type RedisResultQueue struct {
 // recipients/unread fields are filled by the caller from Prepared and are not
 // repeated on the broadcast channel.
 type resultEvent struct {
-	UID         int64  `json:"uid"`
-	ClientMsgID string `json:"client_msg_id"`
-	ServerMsgID string `json:"server_msg_id"`
-	Seq         int64  `json:"seq"`
-	SendTime    int64  `json:"send_time"`
-	Duplicate   bool   `json:"duplicate,omitempty"`
+	UID          int64  `json:"uid"`
+	ClientMsgID  string `json:"client_msg_id"`
+	ServerMsgID  string `json:"server_msg_id"`
+	Seq          int64  `json:"seq"`
+	SendTime     int64  `json:"send_time"`
+	Duplicate    bool   `json:"duplicate,omitempty"`
+	BurnExpireAt int64  `json:"burn_expire_at,omitempty"`
 }
 
 // PubSubResultQueue delivers results over Redis Pub/Sub and keeps only a local
@@ -118,6 +125,13 @@ type Event struct {
 	AtUserIDs      []string `json:"at_user_ids,omitempty"`
 	SendTime       int64    `json:"send_time"`
 	Recipients     []int64  `json:"recipients"`
+	// ADR-0043: burn-after-reading metadata carried through the pipeline.
+	BurnTTL        int32  `json:"burn_ttl,omitempty"`
+	BurnExpireAt   int64  `json:"burn_expire_at,omitempty"`
+	MaxRetentionAt int64  `json:"max_retention_at,omitempty"`
+	SecurityFlags  uint32 `json:"security_flags,omitempty"`
+	ExtType        int32  `json:"ext_type,omitempty"`
+	ExtPayload     string `json:"ext_payload,omitempty"`
 }
 
 // EventPublisher publishes push events.
@@ -140,6 +154,18 @@ type Membership struct {
 	MaxMember  int32
 	GroupType  int16
 	MemberIDs  []int64
+	// ADR-0043: group security state.
+	MuteAll             bool
+	DefaultMuteFlags    int32
+	ScheduledMuteActive bool
+	IsWhitelist         bool
+	MemberMuteFlags     int32
+	MemberMuteUntil     int64
+	NewMemberUntil      int64
+	AntiSpamEnable      bool
+	AntiSpamWindowSec   int32
+	AntiSpamMaxMsgs     int32
+	SensitiveAutoMuteS  int32
 }
 
 // Repository persists messages.
@@ -154,6 +180,10 @@ type Repository interface {
 	MarkDeleted(ctx context.Context, serverMsgID string) error
 	// Search returns conversation matches for a keyword (op:1512).
 	Search(ctx context.Context, conversationID, keyword string, limit int) ([]*model.Message, error)
+	// ADR-0043: burn operations.
+	Burn(ctx context.Context, serverMsgID string) error
+	StartBurnCountdown(ctx context.Context, serverMsgID string, expireAt int64) error
+	FindBurnExpired(ctx context.Context, now int64, limit int) ([]*model.Message, error)
 }
 
 // Sequence allocates per-conversation sequences.
@@ -190,10 +220,23 @@ type Service struct {
 	now       func() time.Time
 	pub       EventPublisher
 	sensitive SensitiveFilter
+	policy    GroupPolicy
 	webhook   webhook.Notifier
 }
 
 // SensitiveFilter checks message content before persistence.
 type SensitiveFilter interface {
 	Check(ctx context.Context, content string) (bool, error)
+}
+
+// GroupPolicy enforces the ADR-0043 group-level anti-spam window and tiered
+// auto-mute (§3.1.4): the sliding window is kept in Redis, and the offense
+// counter maps 1st→5min, 2nd→1h, 3rd+→24h mute. It also carries the
+// sensitive-word auto-mute.
+type GroupPolicy interface {
+	// CheckSpam records one send in the sliding window and returns the offense
+	// tier when the threshold is exceeded (0 = allowed, 1..3 = tier).
+	CheckSpam(ctx context.Context, gid, uid int64, windowSec, maxMsgs int32) (int, error)
+	// AutoMute mutes uid for seconds with system operator 0.
+	AutoMute(ctx context.Context, gid, uid int64, seconds int64) error
 }

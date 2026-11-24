@@ -122,6 +122,58 @@ type Message struct {
 	AtUserIDs      []string
 	SendTime       int64
 	Status         int32
+	// ADR-0043: burn-after-reading and business-card extension.
+	BurnTTL        int32
+	BurnExpireAt   int64
+	MaxRetentionAt int64
+	IsBurned       bool
+	SecurityFlags  uint32
+	ExtType        int32
+	ExtPayload     string
+}
+
+// GroupSecuritySettings is one row of zim_group_security_settings (ADR-0043).
+type GroupSecuritySettings struct {
+	GroupID             int64
+	MuteAll             bool
+	ScheduledMuteEnable bool
+	ScheduledMuteStart  string // HH:MM
+	ScheduledMuteEnd    string // HH:MM
+	ScheduledTimezone   string // IANA
+	DefaultMuteFlags    int32
+	NewMemberMuteSec    int32
+	AntiSpamEnable      bool
+	AntiSpamWindowSec   int32
+	AntiSpamMaxMsgs     int32
+	SensitiveAutoMuteS  int32
+	AntiScreenshot      bool
+	WatermarkEnable     bool
+	ScreenshotPenalty   int16 // 0=WARN 1=MUTE_24H 2=KICK
+	UpdatedAt           int64
+}
+
+// GroupMemberRestriction is one row of zim_group_member_restrictions (ADR-0043).
+type GroupMemberRestriction struct {
+	GroupID     int64
+	UID         int64
+	IsWhitelist bool
+	MuteFlags   int32
+	MuteUntil   int64 // ms; 0 = not muted, -1 = permanent
+	Reason      string
+	OperatorUID int64 // 0 = system auto
+	UpdatedAt   int64
+}
+
+// DLPSecurityEvent is one row of zim_dlp_security_events (ADR-0043).
+type DLPSecurityEvent struct {
+	ID          int64
+	ConvID      string
+	ConvType    int16
+	UID         int64
+	EventType   int16
+	DeviceInfo  string
+	ActionTaken int16
+	CreatedAt   int64
 }
 
 // ChangeLog is one append-only version-log row.
@@ -178,4 +230,21 @@ type ReadMark struct {
 	UID    int64
 	ConvID string
 	Seq    int64
+}
+
+// VoiceRoom is one row of zim_voice_room (ADR-0043). Times are Unix
+// milliseconds; status 1=LIVE 2=CLOSED.
+type VoiceRoom struct {
+	RoomID       int64
+	RoomType     int16
+	GroupID      int64
+	OwnerUID     int64
+	Title        string
+	Announcement string
+	SeatCount    int16
+	JoinSeatMode int16
+	PasswordHash string
+	Status       int16
+	CreatedAt    int64
+	ClosedAt     int64
 }

@@ -12,6 +12,10 @@ shutdownMaxWaitTime = "30s"
 [zim.crontask]
     interval = "1h"
 
+[zim.burn]
+    # 阅后即焚定时扫除（ADR-0043）：物理擦除到期消息 + 1911 推送 + 媒体清理事件。
+    sweepInterval = "5s"
+
 [zim.gateclean]
     # Reclaim stale locations of gateways that are no longer registered (ADR-0022).
     interval = "30s"

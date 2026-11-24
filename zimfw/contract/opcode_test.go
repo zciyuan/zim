@@ -51,12 +51,12 @@ func TestSegmentsReturnsCopy(t *testing.T) {
 }
 
 func TestIsPush(t *testing.T) {
-	for opcode := int32(1901); opcode <= 1907; opcode++ {
+	for opcode := int32(1901); opcode <= OpPushVoiceRoomGift; opcode++ {
 		if !IsPush(opcode) {
 			t.Fatalf("IsPush(%d) = false", opcode)
 		}
 	}
-	for _, opcode := range []int32{1801, 1900, 1908, 2000} {
+	for _, opcode := range []int32{1801, 1900, 2000} {
 		if IsPush(opcode) {
 			t.Fatalf("IsPush(%d) = true", opcode)
 		}

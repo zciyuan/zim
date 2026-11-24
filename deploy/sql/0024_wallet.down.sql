@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS wallet.zim_tip_order;
+DROP TABLE IF EXISTS wallet.zim_red_packet_claim;
+DROP TABLE IF EXISTS wallet.zim_red_packet;
+DROP TABLE IF EXISTS wallet.zim_chain_withdrawal;
+DROP TABLE IF EXISTS wallet.zim_chain_deposit;
+DROP TABLE IF EXISTS wallet.zim_wallet_deposit_address;
+DROP TABLE IF EXISTS wallet.zim_wallet_ledger;
+DROP TABLE IF EXISTS wallet.zim_wallet_account;
+DROP SCHEMA IF EXISTS wallet;

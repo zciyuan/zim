@@ -24,6 +24,7 @@ import (
 	syncapi "github.com/zciyuan/ZIM/cmd/zim-api/app/api/sync"
 	uploadapi "github.com/zciyuan/ZIM/cmd/zim-api/app/api/upload"
 	userapi "github.com/zciyuan/ZIM/cmd/zim-api/app/api/user"
+	walletapi "github.com/zciyuan/ZIM/cmd/zim-api/app/api/wallet"
 	"github.com/zciyuan/ZIM/cmd/zim-api/app/middleware"
 	rediscomp "github.com/zciyuan/ZIM/internal/component/redis"
 	"github.com/zciyuan/ZIM/internal/component/token"
@@ -227,4 +228,17 @@ func Init(proxy *http.Proxy, issuer *token.Issuer,
 	secured.Put("/family/:gid/settings", group.UpdateFamilySettings)
 	secured.Post("/family/:gid/members/:uid/consent", group.GrantFamilyConsent)
 	secured.Get("/family/:gid/audit", group.FamilyAudit)
+
+	// USDT wallet (ADR-0043, ZIM-02 §3.4bis). All money writes carry the
+	// Idempotency-Key header (fallback X-Request-Id, ADR-0001).
+	walletREST := walletapi.NewAPI(proxy)
+	secured.Get("/wallet/balance", walletREST.Balance)
+	secured.Post("/wallet/withdraw", walletREST.Withdraw)
+	secured.Get("/wallet/deposit-address", walletREST.DepositAddress)
+	secured.Post("/wallet/pay-password", walletREST.SetPayPassword)
+	secured.Post("/wallet/totp", walletREST.BindTOTP)
+	secured.Post("/wallet/redpacket/send", walletREST.SendRedPacket)
+	secured.Post("/wallet/redpacket/:rp_id/claim", walletREST.ClaimRedPacket)
+	secured.Get("/wallet/redpacket/:rp_id", walletREST.GetRedPacket)
+	secured.Post("/wallet/tip", walletREST.SendTip)
 }

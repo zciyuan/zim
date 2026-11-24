@@ -28,6 +28,7 @@ import (
 	groupversion "github.com/zciyuan/ZIM/internal/service/groupversion/server"
 	webhook "github.com/zciyuan/ZIM/internal/service/webhook/server"
 	"github.com/zciyuan/ZIM/internal/version"
+	"github.com/zciyuan/ZIM/zimfw/pipe"
 )
 
 func main() {
@@ -57,7 +58,14 @@ func main() {
 		mesh.WithTransporter(transporter),
 	)
 	conversationService := conversationsvc.New(convdao.New(database.Pool()), conversationsvc.NewRedisReadCache(cache.Client(), 0))
-	app.Init(component.Proxy(), groupdao.New(database.Pool()), changeLog, conversationService, groupversion.New(cache.Client()), groupserver.NewMemberCache(cache.Client()), webhook.New(etc.Get("etc.zim.webhook.url", "").String(), etc.Get("etc.zim.webhook.secret", "").String()))
+	// ADR-0043: mute/kick status events flow to zim.pipe.groupMemberStatus so
+	// zim-voiceroom revokes LiveKit publish rights (G-10). Degrades to no-op
+	// when Kafka is not configured.
+	var statusPub groupserver.MemberStatusPublisher
+	if brokers := etc.Get("etc.zim.pipe.brokers", []string{}).Strings(); len(brokers) > 0 {
+		statusPub = groupserver.NewKafkaMemberStatusPublisher(pipe.NewKafkaProducer(brokers))
+	}
+	app.Init(component.Proxy(), groupdao.New(database.Pool()), changeLog, conversationService, groupversion.New(cache.Client()), groupserver.NewMemberCache(cache.Client()), webhook.New(etc.Get("etc.zim.webhook.url", "").String(), etc.Get("etc.zim.webhook.secret", "").String()), statusPub)
 	container.Add(component, database, mongodb, cache, conversationService, health.New(define.ServiceMeshGroup))
 	container.Serve()
 }

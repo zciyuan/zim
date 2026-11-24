@@ -3,6 +3,7 @@ package app
 
 import (
 	"github.com/dobyte/due/v2/cluster/node"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/zciyuan/ZIM/cmd/zim-node-msg/app/logic"
 	changelogsvc "github.com/zciyuan/ZIM/internal/service/changelog/server"
@@ -23,7 +24,10 @@ func Init(proxy *node.Proxy, msg *message.Service, pipeline *message.Pipeline,
 	conv *conversationsvc.Service, changes *changelogsvc.Service,
 	groupRead *groupreadsvc.Service, rtcCalls *rtcsvc.Service, rtcProvider rtcfw.Provider, rtcClientURL string,
 	families *familysvc.Service, connRegistry zimroute.ConnRegistry, syncService *syncsvc.Service,
-	deviceService *devicesvc.Service, deviceIndex zimroute.DeviceSource, reactionService *reactionsvc.Service) {
+	deviceService *devicesvc.Service, deviceIndex zimroute.DeviceSource, reactionService *reactionsvc.Service,
+	cache redis.UniversalClient, dlpAudit logic.DLPAuditPublisher) {
+	// ADR-0043 §3.1.4: group anti-spam window + tiered auto-mute.
+	msg.WithGroupPolicy(logic.NewGroupPolicy(proxy, cache))
 	logic.NewCore(proxy, msg, pipeline, conv, changes, groupRead, rtcCalls, rtcProvider, families).
 		WithConnRegistry(connRegistry).
 		WithSync(syncService).
@@ -31,5 +35,7 @@ func Init(proxy *node.Proxy, msg *message.Service, pipeline *message.Pipeline,
 		WithDeviceIndex(deviceIndex).
 		WithReactions(reactionService).
 		WithRTCClientURL(rtcClientURL).
+		WithCache(cache).
+		WithDLPAudit(dlpAudit).
 		Init()
 }

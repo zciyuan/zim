@@ -84,6 +84,43 @@ func (l *LiveKit) IssueToken(_ context.Context, room string, uid int64, role Rol
 	return signJWT(l.key, l.secret, claims)
 }
 
+// JoinRoom issues a join token for an existing room. Listeners join without
+// publish permission (RoleListener); speakers (RoleParticipant/RolePublisher)
+// join with publish permission.
+func (l *LiveKit) JoinRoom(_ context.Context, room string, uid int64, role Role) (string, error) {
+	now := time.Now()
+	claims := map[string]any{
+		"iss": l.key, "sub": strconv.FormatInt(uid, 10),
+		"nbf": now.Add(-10 * time.Second).Unix(), "exp": now.Add(l.ttl).Unix(),
+		"video": map[string]any{
+			"room": room, "roomJoin": true, "canPublish": role >= RoleParticipant,
+			"canSubscribe": true, "canPublishData": true,
+		},
+	}
+	return signJWT(l.key, l.secret, claims)
+}
+
+// UpdateParticipantPermission flips canPublish for one participant through the
+// twirp livekit.RoomService/UpdateParticipant endpoint. A missing room or
+// participant is treated as success so seat cleanup stays idempotent.
+func (l *LiveKit) UpdateParticipantPermission(ctx context.Context, room string, uid int64, canPublish bool) error {
+	body, _ := json.Marshal(map[string]any{
+		"room": room, "identity": strconv.FormatInt(uid, 10),
+		"permission": map[string]any{"canPublish": canPublish},
+	})
+	status, raw, err := l.call(ctx, "livekit.RoomService/UpdateParticipant", body, room)
+	if err != nil {
+		return err
+	}
+	if status == http.StatusNotFound {
+		return nil
+	}
+	if status >= 300 {
+		return fmt.Errorf("livekit update participant: status %d: %s", status, raw)
+	}
+	return nil
+}
+
 // RemoveParticipant removes a participant from a room.
 func (l *LiveKit) RemoveParticipant(ctx context.Context, room string, uid int64) error {
 	body, _ := json.Marshal(map[string]any{"room": room, "identity": strconv.FormatInt(uid, 10)})

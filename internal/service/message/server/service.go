@@ -14,6 +14,7 @@ import (
 	"github.com/zciyuan/ZIM/internal/service/webhook/server"
 	"github.com/zciyuan/ZIM/internal/utils/conv"
 	"github.com/zciyuan/ZIM/internal/utils/snowflake"
+	"github.com/zciyuan/ZIM/zimfw/contract"
 	"github.com/zciyuan/ZIM/zimfw/contract/errs"
 	"github.com/zciyuan/ZIM/zimfw/idem"
 )
@@ -56,6 +57,9 @@ func (s *Service) PrepareSingle(ctx context.Context, sender int64, req *SendRequ
 	if err := validate(sender, req); err != nil {
 		return nil, err
 	}
+	if err := validateBurn(req); err != nil {
+		return nil, err
+	}
 	if req.ReceiverID <= 0 || req.ReceiverID == sender {
 		return nil, errs.ErrMessageEmpty
 	}
@@ -77,6 +81,9 @@ func (s *Service) PrepareGroup(ctx context.Context, sender int64, req *SendReque
 	if err := validate(sender, req); err != nil {
 		return nil, err
 	}
+	if err := validateBurn(req); err != nil {
+		return nil, err
+	}
 	if req.GroupID <= 0 {
 		return nil, errs.ErrGroupNotExist
 	}
@@ -88,14 +95,113 @@ func (s *Service) PrepareGroup(ctx context.Context, sender int64, req *SendReque
 		return nil, errs.ErrNotGroupMember
 	}
 	now := s.now().UnixMilli()
-	if membership.GroupMute > now || membership.MemberMute > now {
-		return nil, errs.ErrMemberMuted
+	if err := checkGroupMute(membership, req.MsgType, now); err != nil {
+		return nil, err
+	}
+	if err := s.checkGroupSpam(ctx, sender, req.GroupID, membership); err != nil {
+		return nil, err
 	}
 	return &Prepared{
 		ConversationID: conv.Group(req.GroupID),
 		Recipients:     membership.MemberIDs,
 		UnreadCount:    int64(len(membership.MemberIDs)),
 	}, nil
+}
+
+// checkGroupSpam enforces the per-group sliding-window rate (ADR-0043
+// §3.1.4.2): over-threshold sends hit a tiered auto-mute
+// (1st 5min / 2nd 1h / 3rd+ 24h) and fail with 130104.
+func (s *Service) checkGroupSpam(ctx context.Context, sender, gid int64, membership *Membership) error {
+	if s.policy == nil || membership == nil || !membership.AntiSpamEnable {
+		return nil
+	}
+	window := membership.AntiSpamWindowSec
+	if window <= 0 {
+		window = 5
+	}
+	maxMsgs := membership.AntiSpamMaxMsgs
+	if maxMsgs <= 0 {
+		maxMsgs = 5
+	}
+	tier, err := s.policy.CheckSpam(ctx, gid, sender, window, maxMsgs)
+	if err != nil {
+		log.Warnf("group spam check failed: gid = %d, uid = %d, err = %v", gid, sender, err)
+		return nil // 限流组件故障放行，避免阻塞主写路径
+	}
+	if tier <= 0 {
+		return nil
+	}
+	seconds := int64(300)
+	switch tier {
+	case 2:
+		seconds = 3600
+	case 3:
+		seconds = 86400
+	default:
+		if tier > 3 {
+			seconds = 86400
+		}
+	}
+	if muteErr := s.policy.AutoMute(ctx, gid, sender, seconds); muteErr != nil {
+		log.Warnf("group spam auto mute failed: gid = %d, uid = %d, err = %v", gid, sender, muteErr)
+	}
+	return errs.ErrSpamMuted
+}
+
+// autoMuteSensitive mutes a group sender after a blocked sensitive word when
+// the group enables sensitive_auto_mute_s (ADR-0043 §3.1.4.1).
+func (s *Service) autoMuteSensitive(ctx context.Context, sender, gid int64) error {
+	if s.policy == nil || gid <= 0 {
+		return nil
+	}
+	membership, err := s.dir.Membership(ctx, gid, sender)
+	if err != nil || membership == nil || membership.SensitiveAutoMuteS <= 0 {
+		return nil
+	}
+	if muteErr := s.policy.AutoMute(ctx, gid, sender, int64(membership.SensitiveAutoMuteS)); muteErr != nil {
+		log.Warnf("sensitive auto mute failed: gid = %d, uid = %d, err = %v", gid, sender, muteErr)
+	}
+	return nil
+}
+
+// checkGroupMute enforces the ADR-0043 mute matrix: legacy mute windows,
+// mute-all / scheduled mute (owner/admin/whitelist exempt), category flags and
+// new-member protection.
+func checkGroupMute(membership *Membership, msgType int32, now int64) error {
+	legacyMuted := membership.GroupMute > now || membership.MemberMute > now
+	if legacyMuted {
+		return errs.ErrMemberMuted
+	}
+	privileged := membership.Role >= 1 || membership.IsWhitelist // admin/owner/whitelist
+	if !privileged {
+		if membership.MuteAll || membership.ScheduledMuteActive {
+			return errs.ErrMuteAllActive
+		}
+		if membership.NewMemberUntil > 0 && now < membership.NewMemberUntil {
+			return errs.ErrNewMemberProtected
+		}
+		flags := membership.DefaultMuteFlags | membership.MemberMuteFlags
+		if flags&model.MuteFlagAll != 0 {
+			return errs.ErrCategoryMuted
+		}
+		if categoryMuted(flags, msgType) {
+			return errs.ErrCategoryMuted
+		}
+	}
+	if membership.MemberMuteUntil == -1 || membership.MemberMuteUntil > now {
+		return errs.ErrMemberMuted
+	}
+	return nil
+}
+
+// categoryMuted maps a message type to its category mute flag (ADR-0043 §3.1.3).
+func categoryMuted(flags int32, msgType int32) bool {
+	switch msgType {
+	case contract.MsgTypeImage, contract.MsgTypeVideo, contract.MsgTypeVoice, contract.MsgTypeFile:
+		return flags&model.MuteFlagImageVideo != 0
+	default:
+		return false
+	}
 }
 
 // SendSingle sends a direct message synchronously.
@@ -138,11 +244,14 @@ func (s *Service) send(ctx context.Context, sender int64, conversationID string,
 		return nil, errs.ErrInternal.WithCause(err)
 	}
 	now := s.now().UnixMilli()
+	burnTTL, burnExpireAt, retentionAt, securityFlags := applyBurn(req, now, req.GroupID > 0)
 	message := &model.Message{
 		ServerMsgID: strconv.FormatInt(s.ids.Next(), 10),
 		ClientMsgID: req.ClientMsgID, ConversationID: conversationID, Seq: seq,
 		SendID: sender, RecvID: req.ReceiverID, GroupID: req.GroupID, MsgType: req.MsgType,
 		Content: req.Content, AtUserIDs: req.AtUserIDs, SendTime: now, Status: model.MessageNormal,
+		BurnTTL: burnTTL, BurnExpireAt: burnExpireAt, MaxRetentionAt: retentionAt,
+		SecurityFlags: securityFlags, ExtType: req.ExtType, ExtPayload: req.ExtPayload,
 	}
 	result, err := s.repo.Append(ctx, message)
 	if err != nil {
@@ -173,7 +282,7 @@ func (s *Service) send(ctx context.Context, sender int64, conversationID string,
 	s.publish(ctx, message, owners)
 	return &SendResult{
 		ServerMsgID: message.ServerMsgID, Seq: seq, SendTime: now,
-		UnreadCount: unread, Recipients: owners,
+		UnreadCount: unread, Recipients: owners, BurnExpireAt: burnExpireAt,
 	}, nil
 }
 
@@ -274,6 +383,13 @@ func brief(content string) string {
 // WithSensitiveFilter enables content moderation.
 func (s *Service) WithSensitiveFilter(filter SensitiveFilter) *Service {
 	s.sensitive = filter
+	return s
+}
+
+// WithGroupPolicy enables the group anti-spam window and auto-mute
+// (ADR-0043 §3.1.4).
+func (s *Service) WithGroupPolicy(policy GroupPolicy) *Service {
+	s.policy = policy
 	return s
 }
 

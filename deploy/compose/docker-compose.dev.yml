@@ -101,6 +101,7 @@ services:
           api_key: devkey
           urls:
             - http://zim-api:8080/v1/rtc/livekit/webhook
+            - http://zim-voiceroom:8210/livekit/webhook
     ports:
       - "7880:7880"
       - "7881:7881"
@@ -184,7 +185,7 @@ services:
     command:
       - |
         set -eu
-        for file in 0001_init.up.sql 0002_social.up.sql 0003_conversation.up.sql 0004_family_auto_answer.up.sql 0005_admin_audit.up.sql 0006_admin_config.up.sql 0007_admin_report.up.sql 0008_push_cert.up.sql 0009_user_id_sequence.up.sql 0010_device.up.sql 0011_notification.up.sql 0012_webhook_dlq.up.sql 0013_notification_read.up.sql 0014_user_privacy.up.sql 0015_group_searchable.up.sql 0016_device_slot.up.sql 0017_conversation_preview.up.sql 0018_friend_request_dedup.up.sql 0019_group_apply_dedup.up.sql 0020_conversation_watermark.up.sql 0021_friend_request_updated.up.sql 0022_friend_request_stale_cleanup.up.sql dev_seed.sql; do
+        for file in 0001_init.up.sql 0002_social.up.sql 0003_conversation.up.sql 0004_family_auto_answer.up.sql 0005_admin_audit.up.sql 0006_admin_config.up.sql 0007_admin_report.up.sql 0008_push_cert.up.sql 0009_user_id_sequence.up.sql 0010_device.up.sql 0011_notification.up.sql 0012_webhook_dlq.up.sql 0013_notification_read.up.sql 0014_user_privacy.up.sql 0015_group_searchable.up.sql 0016_device_slot.up.sql 0017_conversation_preview.up.sql 0018_friend_request_dedup.up.sql 0019_group_apply_dedup.up.sql 0020_conversation_watermark.up.sql 0021_friend_request_updated.up.sql 0022_friend_request_stale_cleanup.up.sql 0023_group_security_dlp.up.sql 0024_wallet.up.sql 0025_voice_room.up.sql dev_seed.sql; do
           echo "applying $${file}"
           psql -h postgres -U zim -d zim -v ON_ERROR_STOP=1 -f "/sql/$${file}"
         done
@@ -199,7 +200,7 @@ services:
     command:
       - |
         set -eu
-        for spec in "zim.pipe.toRedis:24" "zim.pipe.toMongo:24" "zim.pipe.toPush:24" "zim.pipe.toPushBig:6" "zim.pipe.toOfflinePush:6" "zim.pipe.toRedis.DLQ:6" "zim.pipe.toMongo.DLQ:6" "zim.pipe.toPush.DLQ:6"; do
+        for spec in "zim.pipe.toRedis:24" "zim.pipe.toMongo:24" "zim.pipe.toPush:24" "zim.pipe.toPushBig:6" "zim.pipe.toOfflinePush:6" "zim.pipe.toRedis.DLQ:6" "zim.pipe.toMongo.DLQ:6" "zim.pipe.toPush.DLQ:6" "zim.pipe.burnMediaDelete:3" "zim.pipe.groupMemberStatus:6" "zim.pipe.dlpScreenshotAudit:3" "zim.pipe.walletRpClaim:6" "zim.pipe.walletRpRefund:3" "zim.pipe.walletTipSettled:6"; do
           topic=$${spec%:*}
           partitions=$${spec#*:}
           /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 \
@@ -274,6 +275,23 @@ services:
     command: ["/app/zim-mesh-group", "-etc", "/configs/zim-mesh-group"]
     volumes:
       - ./configs:/configs:ro
+
+  zim-wallet:
+    <<: *zim-common
+    command: ["/app/zim-wallet", "-etc", "/configs/zim-wallet"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8211:8211"
+
+  zim-voiceroom:
+    <<: *zim-common
+    command: ["/app/zim-voiceroom", "-etc", "/configs/zim-voiceroom"]
+    volumes:
+      - ./configs:/configs:ro
+    ports:
+      - "8208:8208"
+      - "8210:8210"
 
   zim-transfer:
     <<: *zim-common

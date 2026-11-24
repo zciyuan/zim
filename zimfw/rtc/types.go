@@ -9,6 +9,7 @@ type Role int32
 
 // Participant roles.
 const (
+	RoleListener    Role = 0
 	RoleParticipant Role = 1
 	RolePublisher   Role = 2
 )
@@ -39,10 +40,16 @@ type RoomEvent struct {
 	Muted bool
 }
 
-// Provider is the five-action RTC boundary.
+// Provider is the media-provider boundary.
 type Provider interface {
 	CreateRoom(ctx context.Context, req RoomReq) (*Room, error)
 	IssueToken(ctx context.Context, room string, uid int64, role Role) (string, error)
+	// JoinRoom issues a token for a room participant. Listeners join muted
+	// (cannot publish); speakers join with publish permission. Voice rooms
+	// grant publish only through UpdateParticipantPermission once a member
+	// actually takes a seat.
+	JoinRoom(ctx context.Context, room string, uid int64, role Role) (string, error)
+	UpdateParticipantPermission(ctx context.Context, room string, uid int64, canPublish bool) error
 	RemoveParticipant(ctx context.Context, room string, uid int64) error
 	DeleteRoom(ctx context.Context, room string) error
 	MuteTrack(ctx context.Context, room, track string, muted bool) error

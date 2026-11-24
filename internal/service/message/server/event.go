@@ -55,6 +55,9 @@ func (s *Service) publish(ctx context.Context, msg *model.Message, recipients []
 		RecvID: msg.RecvID, GroupID: msg.GroupID, MsgType: msg.MsgType,
 		Content: msg.Content, AtUserIDs: msg.AtUserIDs, SendTime: msg.SendTime,
 		Recipients: recipients,
+		BurnTTL:    msg.BurnTTL, BurnExpireAt: msg.BurnExpireAt,
+		MaxRetentionAt: msg.MaxRetentionAt, SecurityFlags: msg.SecurityFlags,
+		ExtType: msg.ExtType, ExtPayload: msg.ExtPayload,
 	}
 	if err := s.pub.Publish(ctx, event); err != nil {
 		log.Warnf("publish message event failed: server_msg_id = %s, err = %v", msg.ServerMsgID, err)

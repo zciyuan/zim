@@ -20,14 +20,15 @@ type ConversationLeaver interface {
 // Server is the group mesh service provider.
 type Server struct {
 	pb.UnimplementedGroupServer
-	proxy    *mesh.Proxy
-	repo     Repository
-	ids      *snowflake.Generator
-	changes  *changelog.Service
-	versions GroupVersion
-	webhook  webhook.Notifier
-	conv     ConversationLeaver
-	members  *MemberCache
+	proxy     *mesh.Proxy
+	repo      Repository
+	ids       *snowflake.Generator
+	changes   *changelog.Service
+	versions  GroupVersion
+	webhook   webhook.Notifier
+	conv      ConversationLeaver
+	members   *MemberCache
+	statusPub MemberStatusPublisher
 }
 
 // GroupVersion tracks member/join version counters.
@@ -145,4 +146,44 @@ type listAppliesArgs struct {
 type searchGroupsArgs struct {
 	Keyword string
 	Limit   int32
+}
+
+// ADR-0043: group security settings (op:1318).
+type setGroupSecurityArgs struct {
+	GroupID             int64
+	OperatorID          int64
+	MuteAll             bool
+	ScheduledMuteEnable bool
+	ScheduledMuteStart  string
+	ScheduledMuteEnd    string
+	ScheduledTimezone   string
+	DefaultMuteFlags    int32
+	NewMemberMuteSec    int32
+	AntiSpamEnable      bool
+	AntiSpamWindowSec   int32
+	AntiSpamMaxMsgs     int32
+	SensitiveAutoMuteS  int32
+	AntiScreenshot      bool
+	WatermarkEnable     bool
+	ScreenshotPenalty   int32
+}
+
+// ADR-0043: member category mute flags / whitelist (op:1319).
+type setMemberRestrictionArgs struct {
+	GroupID     int64
+	OperatorID  int64
+	UserID      int64
+	MuteFlags   int32
+	IsWhitelist bool
+	MuteUntil   int64
+}
+
+// ADR-0043: DLP audit record.
+type dlpEventArgs struct {
+	ConvID      string
+	ConvType    int16
+	UID         int64
+	EventType   int16
+	DeviceInfo  string
+	ActionTaken int16
 }

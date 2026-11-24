@@ -159,3 +159,33 @@ message DismissGroupReq {
 message GroupOperationRes {
   bool ok = 1;
 }
+
+// 1318 群安全设置：定时全员禁言/全员禁言/防截屏/水印/惩罚策略（ADR-0043）。
+message SetGroupSecurityReq {
+  string group_id               = 1;
+  bool   mute_all               = 2;
+  bool   scheduled_mute_enable  = 3;
+  string scheduled_mute_start   = 4; // HH:MM
+  string scheduled_mute_end     = 5; // HH:MM
+  string scheduled_timezone     = 6; // IANA, e.g. Asia/Shanghai
+  uint32 default_mute_flags     = 7;
+  int32  new_member_mute_sec    = 8;
+  bool   anti_spam_enable       = 9;
+  int32  anti_spam_window_sec   = 10;
+  int32  anti_spam_max_msgs     = 11;
+  int32  sensitive_auto_mute_s  = 12;
+  bool   anti_screenshot        = 13;
+  bool   watermark_enable       = 14;
+  int32  screenshot_penalty     = 15; // 0 WARN / 1 MUTE_24H / 2 KICK
+}
+
+// 1319 成员分类禁言位掩码 + 全员禁言白名单（ADR-0043）。
+// mute_flags: 1<<0 全禁言 1<<1 禁图片/视频 1<<2 禁外链 1<<3 禁名片
+// 1<<4 禁红包 1<<5 禁表情包 1<<6 禁改昵称 1<<7 禁 Reaction 1<<8 禁语音房发言。
+message SetMemberRestrictionReq {
+  string group_id   = 1;
+  int64  user_id    = 2;
+  uint32 mute_flags = 3;
+  bool   is_whitelist = 4;
+  int64  mute_until = 5; // ms; 0 = clear, -1 = permanent
+}
