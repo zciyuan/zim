@@ -1,0 +1,51 @@
+# ZIM zim-wallet bootstrap configuration.
+# Run: ./build/bin/zim-wallet -etc ./configs/zim-wallet
+
+pid = "./run/zim-wallet.pid"
+mode = "debug"
+timezone = "Local"
+shutdownMaxWaitTime = "30s"
+
+[zim.health]
+    addr = ":8205"
+
+[zim.wallet]
+    dsn = "postgres://zim:zim@127.0.0.1:5432/zim?sslmode=disable"
+    minWithdraw = 1000000
+    maxSmallWithdraw = 500000000
+    freezeWindowMs = 86400000
+    feeBps = 500
+
+[zim.wallet.confirmations]
+    trc20 = 20
+    erc20 = 12
+    bep20 = 15
+
+[locate.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim"
+
+[lock.redis]
+    addrs = ["127.0.0.1:6379"]
+    prefix = "zim:lock"
+
+[zim.pipe]
+    brokers = ["127.0.0.1:9092"]
+
+[cluster.mesh]
+    name = "wallet"
+    addr = ":0"
+    codec = "proto"
+
+[registry.nacos]
+    urls = ["http://127.0.0.1:8848/nacos"]
+    namespaceId = ""
+    groupName = "ZIM"
+    clusterName = "DEFAULT"
+
+[transport.grpc.server]
+    addr = ":0"
+
+[log]
+    level = "info"
+    terminals = ["console"]
