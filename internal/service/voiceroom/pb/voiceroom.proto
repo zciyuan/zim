@@ -1,0 +1,181 @@
+// Voiceroom is the internal mesh RPC surface of zim-voiceroom (ADR-0043).
+// Room IDs are the snowflake int64 of zim_voice_room.room_id; all timestamps
+// are Unix milliseconds.
+syntax = "proto3";
+
+package zim.service.voiceroom;
+
+option go_package = "github.com/zciyuan/ZIM/internal/service/voiceroom/pb;voiceroompb";
+
+// RoomInfo is the persisted room snapshot.
+message RoomInfo {
+  int64  room_id        = 1;
+  int32  room_type      = 2; // 1 GROUP / 2 PUBLIC / 3 PASSWORD
+  int64  group_id       = 3;
+  int64  owner_uid      = 4;
+  string title          = 5;
+  string announcement   = 6;
+  int32  seat_count     = 7;
+  int32  join_seat_mode = 8; // 1 free / 2 hand-up approval
+  int32  status         = 9; // 1 LIVE / 2 CLOSED
+  int64  created_at     = 10;
+}
+
+// SeatInfo is one seat snapshot: status 0 EMPTY / 1 OCCUPIED_SPEAKING /
+// 2 OCCUPIED_SELF_MUTED / 3 OCCUPIED_FORCE_MUTED / 4 LOCKED / 5 RECONNECTING.
+message SeatInfo {
+  int32 seat_index = 1;
+  int64 uid        = 2;
+  int32 status     = 3;
+}
+
+// CreateRoomArgs carries the room-create request (op 1808).
+message CreateRoomArgs {
+  int64  owner_uid      = 1;
+  int32  room_type      = 2;
+  int64  group_id       = 3;
+  string title          = 4;
+  string password       = 5; // PASSWORD rooms only, never logged
+  int32  seat_count     = 6; // default 8, max 12
+  int32  join_seat_mode = 7; // default 1 free
+}
+
+message CreateRoomReply {
+  RoomInfo room  = 1;
+  string   token = 2; // owner join token
+  string   sfu_url = 3;
+  int64    expire_at = 4;
+}
+
+// ListRoomsArgs pages rooms of one group (group_id > 0) or public rooms.
+message ListRoomsArgs {
+  int64 group_id = 1;
+  int64 offset   = 2;
+  int32 limit    = 3;
+}
+
+message ListRoomsReply {
+  repeated RoomInfo rooms    = 1;
+  bool              has_more = 2;
+}
+
+// JoinRoomArgs carries the join request (op 1810).
+message JoinRoomArgs {
+  int64  room_id  = 1;
+  int64  uid      = 2;
+  string password = 3;
+}
+
+message JoinRoomReply {
+  string            token     = 1;
+  string            sfu_url   = 2;
+  int64             expire_at = 3;
+  repeated SeatInfo seats     = 4;
+}
+
+// RefreshTokenArgs renews a member token (op 1811).
+message RefreshTokenArgs {
+  int64 room_id = 1;
+  int64 uid     = 2;
+}
+
+message RefreshTokenReply {
+  string token     = 1;
+  int64  expire_at = 2;
+}
+
+// TakeSeatArgs occupies a seat (op 1812).
+message TakeSeatArgs {
+  int64 room_id   = 1;
+  int64 uid       = 2;
+  int32 seat_index = 3;
+}
+
+// LeaveSeatArgs frees the caller's seat (op 1813).
+message LeaveSeatArgs {
+  int64 room_id = 1;
+  int64 uid     = 2;
+}
+
+// KickSeatArgs removes a member from a seat (op 1814).
+message KickSeatArgs {
+  int64 room_id    = 1;
+  int64 operator_uid = 2;
+  int64 uid        = 3;
+  int32 seat_index = 4;
+}
+
+// ForceMuteSeatArgs toggles server-side force mute (op 1815).
+message ForceMuteSeatArgs {
+  int64 room_id      = 1;
+  int64 operator_uid = 2;
+  int32 seat_index   = 3;
+  bool  muted        = 4;
+}
+
+// LockSeatArgs locks or unlocks a seat (op 1816).
+message LockSeatArgs {
+  int64 room_id      = 1;
+  int64 operator_uid = 2;
+  int32 seat_index   = 3;
+  bool  locked       = 4;
+}
+
+// HandUpArgs enqueues a hand-up request (op 1817).
+message HandUpArgs {
+  int64 room_id = 1;
+  int64 uid     = 2;
+}
+
+// ApproveHandUpArgs accepts or rejects a hand-up request (op 1818).
+message ApproveHandUpArgs {
+  int64 room_id      = 1;
+  int64 operator_uid = 2;
+  int64 uid          = 3;
+  int32 seat_index   = 4; // required when accept
+  bool  accept       = 5;
+}
+
+// InviteToSeatArgs invites a member onto a seat (op 1819).
+message InviteToSeatArgs {
+  int64 room_id      = 1;
+  int64 operator_uid = 2;
+  int64 uid          = 3;
+  int32 seat_index   = 4;
+}
+
+// GetRoomArgs fetches one room.
+message GetRoomArgs {
+  int64 room_id = 1;
+}
+
+// CloseRoomArgs closes a room (owner/admin or empty-timeout GC).
+message CloseRoomArgs {
+  int64 room_id      = 1;
+  int64 operator_uid = 2;
+  int32 reason       = 3; // 1 empty timeout / 2 owner closed / 3 admin forced
+}
+
+// SeatOperationReply is the shared seat operation response.
+message SeatOperationReply {
+  bool            ok    = 1;
+  repeated SeatInfo seats = 2;
+}
+
+// Voiceroom is the mesh service registered under discovery name "voiceroom".
+service Voiceroom {
+  rpc CreateRoom(CreateRoomArgs) returns (CreateRoomReply);
+  rpc ListRooms(ListRoomsArgs) returns (ListRoomsReply);
+  rpc JoinRoom(JoinRoomArgs) returns (JoinRoomReply);
+  rpc RefreshToken(RefreshTokenArgs) returns (RefreshTokenReply);
+  rpc TakeSeat(TakeSeatArgs) returns (SeatOperationReply);
+  rpc LeaveSeat(LeaveSeatArgs) returns (SeatOperationReply);
+  rpc KickSeat(KickSeatArgs) returns (SeatOperationReply);
+  rpc ForceMuteSeat(ForceMuteSeatArgs) returns (SeatOperationReply);
+  rpc LockSeat(LockSeatArgs) returns (SeatOperationReply);
+  rpc HandUp(HandUpArgs) returns (SeatOperationReply);
+  rpc ApproveHandUp(ApproveHandUpArgs) returns (SeatOperationReply);
+  rpc InviteToSeat(InviteToSeatArgs) returns (SeatOperationReply);
+  rpc GetRoom(GetRoomArgs) returns (RoomInfo);
+  rpc CloseRoom(CloseRoomArgs) returns (SeatOperationReply);
+}
